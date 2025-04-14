@@ -1,4 +1,4 @@
-# 📄 Netfly Peppol REST API – Documentation v2.0 (12/04/2025)
+# 📄 Netfly Peppol REST API – Documentation v2.1
 
 Welcome to the Netfly Peppol REST API documentation. This API is designed to allow secure and efficient exchange of business documents (such as invoices) with the Peppol network. In addition to sending and receiving documents, it also allows clients to manage their own list of Peppol participants through a RESTful interface.
 
@@ -16,7 +16,7 @@ The API is built on modern Jakarta EE standards and is protected with Auth0 JWT 
 
 ## 🧾 Version
 
-- API Version: 1.0
+- API Version: 2.1
 - Last Update: 12 April 2025
 
 ## 🧰 Requirements
@@ -225,18 +225,12 @@ This endpoint supports the following query parameters:
 | `endDate`   | End of search interval (UTC timestamp)   | `yyyyMMddHHmmss`    | Yes      |
 | `flow`      | Flow direction                           | `in` or `out`       | Yes      |
 
----
-
 ### 🧪 cURL Example
 
 ```bash
 curl -X GET "https://peppol2.netfly.be/netfly/documentsList?startDate=20250201000000&endDate=20250430235959&flow=out" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
-
-Replace YOUR_ACCESS_TOKEN with your valid JWT token.
-
----
 
 ### ✅ Successful Response
 
@@ -261,8 +255,6 @@ Replace YOUR_ACCESS_TOKEN with your valid JWT token.
 ]
 ```
 
----
-
 ### ❌ Sample Error or Retry Status
 
 ```json
@@ -285,8 +277,6 @@ Replace YOUR_ACCESS_TOKEN with your valid JWT token.
   }
 ]
 ```
-
----
 
 ### 📝 Notes
 
