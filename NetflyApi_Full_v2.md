@@ -158,9 +158,7 @@ The document must be conformant with the Peppol BIS Billing 3.0 standard and enc
 Authentication is required via a Bearer token issued by the Netfly Auth0 server.
 
 ### 🌐 Endpoint
-```
 `POST /netfly/sendDocument`
-```
 
 ### Headers
 - `Authorization: Bearer YOUR_ACCESS_TOKEN`
@@ -359,7 +357,6 @@ This endpoint allows the API user to register their own participants, who can th
 Netfly validates that each participant is registered in the Peppol network before allowing its creation via this endpoint.
 
 ### 🌐 Endpoint
-
 `POST https://peppol2.netfly.be/netfly/participantManagement`
 
 ### 📥 Request Format
@@ -368,7 +365,6 @@ The request must be sent as JSON and include the following headers:
 
 - `Authorization: Bearer YOUR_ACCESS_TOKEN`
 - `Content-Type: application/json`
-
 
 ### 🧪 cURL Example
 
@@ -423,7 +419,6 @@ Just like the Add Participant endpoint, this API requires all participant inform
 🔁 The participant must already exist in the database and must belong to the authenticated client.
 
 ### 🌐 Endpoint  
-
 `PUT https://peppol2.netfly.be/netfly/participantManagement`
 
 ### 🧪 cURL Example
@@ -536,10 +531,7 @@ This endpoint allows the API user to delete a participant that belongs to them, 
 ---
 
 ### 🌐 Endpoint
-
-```
-DELETE https://peppol2.netfly.be/netfly/participantManagement?id={participant_id}
-```
+`DELETE https://peppol2.netfly.be/netfly/participantManagement?id={participant_id}`
 
 ---
 
