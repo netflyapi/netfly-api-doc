@@ -27,6 +27,8 @@ The API is built on modern Jakarta EE standards and is protected with Auth0 JWT 
 
 > ℹ️ Each request to the API must be authenticated using a valid JWT token obtained from the Auth0 token endpoint. See Authentication section for details.
 
+
+---
 # 🌍 API Environments: Test & Production
 
 The Netfly Peppol REST API is available in two distinct environments:
@@ -72,6 +74,7 @@ Never mix credentials or use TEST credentials in production or vice versa.
 - Test thoroughly in the TEST environment before switching to PRODUCTION.
 - Validate all participant identifiers, payload formats, and headers.
 - Ensure your server uses HTTPS for all requests.
+
 
 ---
 # 🔐 Authentication via Auth0
@@ -132,12 +135,12 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...Abc123XYZ
 
 This ensures that your client is authenticated and authorized to interact with Netfly’s API endpoints.
 
+
+---
 # 📤 Send Business Document to Peppol Network
 
 This endpoint allows an authenticated client to send a business document (e.g., Invoice or Credit Note) to the Peppol network.
-
 The document must be conformant with the Peppol BIS Billing 3.0 standard and encoded in XML.
-
 Authentication is required via a Bearer token issued by the Netfly Auth0 server.
 
 ### 🌐 Endpoint
@@ -178,6 +181,7 @@ curl -X POST https://peppol2.netfly.be/netfly/sendDocument \
 
 📘 This method is ideal for clients wishing to integrate their ERP system directly with the Peppol infrastructure using standardized UBL documents.
 
+
 ---
 # 📄 Retrieve List of Business Documents
 
@@ -196,8 +200,6 @@ The response contains detailed information for each document, such as:
 - Internal file name (used to retrieve the full XML document later)
 
 ⚠️ The internal document ID is required for fetching the full XML file via the receiveDocument endpoint.
-
----
 
 ### 🔧 Required Parameters
 
@@ -268,6 +270,7 @@ curl -X GET "https://peppol2.netfly.be/netfly/documentsList?startDate=2025020100
 - If no documents match the criteria, an empty list is returned.
 - This endpoint is useful to identify document submission status and track errors if any.
 
+
 ---
 # 📥 Receive Business Document from Peppol Network
 
@@ -317,6 +320,7 @@ If the document is not found or does not belong to the authenticated client:
   "code": "RE001"
 }
 ```
+
 
 ---
 # 📌 Add Participant
@@ -376,6 +380,7 @@ curl -X POST https://peppol2.netfly.be/netfly/participantManagement \
 
 💡 Note: Ensure that all required fields are correctly formatted and that the participant already exists in the Peppol network (Netfly will perform this validation automatically).
 
+
 ---
 # 📝 Update a Participant
 
@@ -428,6 +433,7 @@ curl -X PUT https://peppol2.netfly.be/netfly/participantManagement \
 }
 ```
 
+
 ---
 # 🔍 Participants List
 
@@ -479,7 +485,7 @@ curl -X GET "https://peppol2.netfly.be/netfly/participantsList?name=Netfly&conta
 
 The `inputDate` is returned as an array: `[year, month, day, hour, minute, second]`.
 
-### ❗ Error Handling
+### ❌ Unsuccessful Response 
 
 If something goes wrong (e.g., unauthorized request), a standard error object will be returned:
 
@@ -491,6 +497,8 @@ If something goes wrong (e.g., unauthorized request), a standard error object wi
 }
 ```
 
+
+---
 # 🗑️ Delete a Participant
 
 This endpoint allows the API user to delete a participant that belongs to them, by specifying the participant’s `id`.
@@ -532,6 +540,7 @@ curl -X DELETE "https://peppol2.netfly.be/netfly/participantManagement?id=5" \
   "code": "PM012"
 }
 ```
+
 
 ---
 # 📄✅ Validate a Peppol BIS Billing 3.0 Document
