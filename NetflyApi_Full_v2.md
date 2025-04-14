@@ -36,8 +36,6 @@ The Netfly Peppol REST API is available in two distinct environments:
 
 Each environment has its own base URL, authentication domain, and credentials. Users will receive separate Client ID and Client Secret values for each mode.
 
----
-
 ## 🔐 Authentication Settings
 
 When authenticating with Auth0, you must use the correct audience and token URL depending on the environment.
@@ -48,8 +46,6 @@ When authenticating with Auth0, you must use the correct audience and token URL 
 | PRODUCTION  | https://netfly-go.eu.auth0.com  | https://netfly-go.eu.auth0.com/api/v2/                  |
 
 > 🧠 Note: The audience must match exactly. Incorrect values will result in authentication failure.
-
----
 
 ## 🌐 REST API Base URLs
 
@@ -62,8 +58,6 @@ All endpoints are prefixed by a base URL that depends on the selected environmen
 
 > ⚠️ Only use the Production environment once your integration has been approved by Netfly and is ready for live operations.
 
----
-
 ## 📋 Credentials Management
 
 You will receive two sets of credentials:
@@ -73,22 +67,17 @@ You will receive two sets of credentials:
 
 Never mix credentials or use TEST credentials in production or vice versa.
 
----
-
 ## 🧪 Best Practices
 
 - Test thoroughly in the TEST environment before switching to PRODUCTION.
 - Validate all participant identifiers, payload formats, and headers.
 - Ensure your server uses HTTPS for all requests.
 
-
+---
 # 🔐 Authentication via Auth0
 
 Before accessing any Netfly Peppol API endpoints, you must authenticate via Auth0 using the OAuth 2.0 Client Credentials Flow.
-
 This will provide you with a JWT (JSON Web Token) that must be included in the Authorization header of your API requests.
-
----
 
 ## ✅ Sample Authentication Request (curl)
 
@@ -113,8 +102,6 @@ Replace:
 
 > 🔐 Note: Ensure you are using the correct audience and Auth0 domain that matches your environment (TEST or PRODUCTION). See [API Environments](#🌍-api-environments-test--production) for reference.
 
----
-
 ## 📥 Sample JSON Response
 
 If the request is successful, Auth0 will return a JSON response like the following:
@@ -130,14 +117,10 @@ If the request is successful, Auth0 will return a JSON response like the followi
 
 Only the access_token is required for calling the API.
 
----
-
 ## 🔄 Token Expiration
 
 - The token is valid for 24 hours (86400 seconds).
 - When it expires, you must request a new token using the same authentication request.
-
----
 
 ## 📎 Usage in API Calls
 
@@ -195,6 +178,7 @@ curl -X POST https://peppol2.netfly.be/netfly/sendDocument \
 
 📘 This method is ideal for clients wishing to integrate their ERP system directly with the Peppol infrastructure using standardized UBL documents.
 
+---
 # 📄 Retrieve List of Business Documents
 
 This endpoint allows a client to retrieve a list of business documents that have been sent to or received from the Peppol network.
@@ -284,14 +268,12 @@ curl -X GET "https://peppol2.netfly.be/netfly/documentsList?startDate=2025020100
 - If no documents match the criteria, an empty list is returned.
 - This endpoint is useful to identify document submission status and track errors if any.
 
-
+---
 # 📥 Receive Business Document from Peppol Network
 
 This endpoint allows a client to retrieve a previously received (or sent) Peppol BIS Billing 3.0 document in XML format from the Netfly Access Point.
 Netfly’s Access Point (AP) can only receive documents on behalf of participants that are registered in an SMP (Service Metadata Publisher) pointing to Netfly. Optionally, clients can configure email notifications to be sent when a new document arrives.
 This endpoint can also be used to retrieve a previously sent document by specifying the appropriate document ID and flow direction (`in` or `out`).
-
----
 
 ### 🌐 Endpoint
 `GET /netfly/receiveDocument`
@@ -302,8 +284,6 @@ This endpoint can also be used to retrieve a previously sent document by specify
 |----------|--------|----------|---------------------------------------------|
 | docId    | int    | Yes      | Internal file ID (as returned by documentsList) |
 | flow     | string | Yes      | Either `in` or `out`                        |
-
----
 
 ### 🧪 cURL Example
 
@@ -326,8 +306,6 @@ Returns the full XML document in Peppol BIS Billing 3.0 format. Here’s a trunc
 
 > ℹ️ Full XML structure is omitted in the documentation for brevity.
 
----
-
 ### ❌ Error Response
 
 If the document is not found or does not belong to the authenticated client:
@@ -340,10 +318,10 @@ If the document is not found or does not belong to the authenticated client:
 }
 ```
 
+---
 # 📌 Add Participant
 
 This endpoint allows the API user to register their own participants, who can then be declared as **senders** in Peppol-compliant business documents. For instance, the "supplier party" in a Peppol invoice must correspond to a participant previously declared by the user.
-
 Netfly validates that each participant is registered in the Peppol network before allowing its creation via this endpoint.
 
 ### 🌐 Endpoint
@@ -396,10 +374,9 @@ curl -X POST https://peppol2.netfly.be/netfly/participantManagement \
 }
 ```
 
----
 💡 Note: Ensure that all required fields are correctly formatted and that the participant already exists in the Peppol network (Netfly will perform this validation automatically).
 
-
+---
 # 📝 Update a Participant
 
 This endpoint allows the API user to update an existing participant record. It is used when information such as the contact person, company name, or website needs to be changed. Netfly API verifies that the participant still exists and is valid in the Peppol network.
@@ -450,6 +427,8 @@ curl -X PUT https://peppol2.netfly.be/netfly/participantManagement \
   "code": "PM007"
 }
 ```
+
+---
 # 🔍 Participants List
 
 This endpoint allows an API user to retrieve a list of their registered participants. It is especially useful to verify or manage participant metadata such as contact information and registration identifiers.
@@ -518,12 +497,8 @@ This endpoint allows the API user to delete a participant that belongs to them, 
 
 ⚠️ Only participants that belong to the authenticated client can be deleted.
 
----
-
 ### 🌐 Endpoint
 `DELETE https://peppol2.netfly.be/netfly/participantManagement?id={participant_id}`
-
----
 
 ### 📥 Parameters
 
@@ -531,16 +506,12 @@ This endpoint allows the API user to delete a participant that belongs to them, 
 |------|------|----------|-------------|
 | id   | int  | Yes      | ID of the participant to be deleted |
 
----
-
 ### 🧪 cURL Example
 
 ```bash
 curl -X DELETE "https://peppol2.netfly.be/netfly/participantManagement?id=5" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
-
----
 
 ### ✅ Successful Response
 
@@ -552,8 +523,6 @@ curl -X DELETE "https://peppol2.netfly.be/netfly/participantManagement?id=5" \
 }
 ```
 
----
-
 ### ❌ Unsuccessful Response
 
 ```json
@@ -564,7 +533,7 @@ curl -X DELETE "https://peppol2.netfly.be/netfly/participantManagement?id=5" \
 }
 ```
 
-
+---
 # 📄✅ Validate a Peppol BIS Billing 3.0 Document
 
 This special endpoint is a powerful tool for API users, enabling them to verify the compliance of their business documents—especially invoices—before submitting them to the Peppol network. It helps validate Peppol BIS Billing 3.0 (UBL format) against the applicable XML Schema and Schematron rulesets.
