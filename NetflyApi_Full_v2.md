@@ -201,6 +201,9 @@ The response contains detailed information for each document, such as:
 
 ⚠️ The internal document ID is required for fetching the full XML file via the receiveDocument endpoint.
 
+### 🌐 Endpoint
+`GET /netfly/documentsList`
+
 ### 🔧 Required Parameters
 
 This endpoint supports the following query parameters:
@@ -329,7 +332,7 @@ This endpoint allows the API user to register their own participants, who can th
 Netfly validates that each participant is registered in the Peppol network before allowing its creation via this endpoint.
 
 ### 🌐 Endpoint
-`POST https://peppol2.netfly.be/netfly/participantManagement`
+`POST /netfly/participantManagement`
 
 ### 📥 Request Format
 
@@ -391,7 +394,7 @@ Just like the Add Participant endpoint, this API requires all participant inform
 🔁 The participant must already exist in the database and must belong to the authenticated client.
 
 ### 🌐 Endpoint  
-`PUT https://peppol2.netfly.be/netfly/participantManagement`
+`PUT /netfly/participantManagement`
 
 ### 🧪 cURL Example
 
@@ -506,7 +509,7 @@ This endpoint allows the API user to delete a participant that belongs to them, 
 ⚠️ Only participants that belong to the authenticated client can be deleted.
 
 ### 🌐 Endpoint
-`DELETE https://peppol2.netfly.be/netfly/participantManagement?id={participant_id}`
+`DELETE /netfly/participantManagement?id={participant_id}`
 
 ### 📥 Parameters
 
