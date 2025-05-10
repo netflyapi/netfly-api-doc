@@ -1,4 +1,4 @@
-# 📄 Netfly Peppol REST API – Documentation v2.1
+# 📄 Netfly Peppol REST API – Documentation v2.2
 
 Welcome to the Netfly Peppol REST API documentation. This API is designed to allow secure and efficient exchange of business documents (such as invoices) with the Peppol network. In addition to sending and receiving documents, it also allows clients to manage their own list of Peppol participants through a RESTful interface.
 
@@ -544,6 +544,134 @@ curl -X DELETE "https://peppol2.netfly.be/netfly/participantManagement?id=5" \
 }
 ```
 
+---
+# 🔔 Webhook 
+
+A webhook lets your ERP receive immediate notifications from Netfly about incoming business documents sent over the Peppol network. After you register an endpoint, Netfly pushes the documents straight to it.
+When the webhook is created, Netfly automatically generates a unique webhook secret. Netfly uses this secret to produce a digital signature, which it adds to an HTTP header in every request it sends to your ERP.
+Your ERP can use the same secret to verify the signature, confirming that each request genuinely comes from Netfly.
+
+### 🌐 Endpoint
+`POST /netfly/webhook`
+
+## 📥 Register or Update Webhook (POST)
+
+### cURL Example
+
+```bash
+curl -X POST https://peppol2.netfly.be/netfly/webhook \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "url": "https://client.example.com/peppolWebhook",
+        "includeXmlPayload": true
+      }'
+```
+
+### ✅ Successful Responses
+
+**Webhook Created**
+
+```json
+{
+  "success": true,
+  "message": "webhook successfully created",
+  "code": "WHC00"
+}
+```
+
+**Webhook Updated**
+
+```json
+{
+  "success": true,
+  "message": "webhook successfully updated",
+  "code": "WHU00"
+}
+```
+
+### ❌ Unsuccessful Responses
+
+**Missing URL**
+
+```json
+{
+  "success": false,
+  "message": "missing 'url' parameter",
+  "code": "WH001"
+}
+```
+
+**Invalid URL**
+
+```json
+{
+  "success": false,
+  "message": "invalid webhook URL",
+  "code": "WH002"
+}
+```
+
+## 📤 Get Webhook Info (GET)
+
+### cURL Example
+
+```bash
+curl -X GET https://peppol2.netfly.be/netfly/webhook \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+### ✅ Successful Response
+
+```json
+{
+  "success": true,
+  "webhookUrl": "https://client.example.com/peppolWebhook",
+  "includeXmlPayload": true,
+  "inputDate": "2025-05-09T14:32:55",
+  "webhookSecret": "abc123xyz456"
+}
+```
+
+### ❌ Unsuccessful Response
+
+```json
+{
+  "success": false,
+  "message": "no webhook registered for the client 123456",
+  "code": "WH003"
+}
+```
+
+## 🗑️ Delete Webhook (DELETE)
+
+### cURL Example
+
+```bash
+curl -X DELETE https://peppol2.netfly.be/netfly/webhook \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+### ✅ Successful Response
+
+```json
+{
+  "success": true,
+  "message": "webhook deleted successfully",
+  "code": "WHD00"
+}
+```
+
+### ❌ Unsuccessful Response
+
+```json
+{
+  "success": false,
+  "message": "no webhook registered for the client 123456",
+  "code": "WH003"
+}
+```
+
 
 ---
 # 📄✅ Validate a Peppol BIS Billing 3.0 Document
@@ -734,3 +862,32 @@ The validation report confirms compliance with Peppol standards if all rulesets 
 |------|---------|--------------|
 | `PLA00` | list returned to client | 200 |
 | `PL501` | failed to retrieve list | 500 |
+
+## Webhook Create/Update
+
+| Code | Message | HTTP Status |
+|------|---------|--------------|
+| `WHC00` | webhook successfully created | 200 |
+| `WHU00` | webhook successfully updated | 200 |
+| `WH001` | missing 'url' parameter | 400 |
+| `WH002` | invalid 'url' parameter | 400 |
+| `WH003` | no webhook registered for the client | 404 |
+| `WHC01` | failed to create the webhook | 500 |
+| `WHU01` | failed to update the webhook | 500 |
+| `WH500` | internal error | 500 |
+
+## Webhook Get Information
+
+| Code | Message | HTTP Status |
+|------|---------|--------------|
+| `WHI00` | info returned to client | 200 |
+| `WH003` | no webhook registered for the client | 404 |
+| `WH500` | internal error | 500 |
+
+## Webhook Delete
+
+| Code | Message | HTTP Status |
+|------|---------|--------------|
+| `WHD00` | webhook deleted successfully | 200 |
+| `WH003` | no webhook registered for the client | 404 |
+| `WH500` | internal error | 500 |
