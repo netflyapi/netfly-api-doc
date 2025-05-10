@@ -624,3 +624,113 @@ curl -X POST \
 
 The validation report confirms compliance with Peppol standards if all rulesets pass successfully.
 
+---
+# 🚦 API Operation Result Codes
+
+## Client Authentication/Authorization
+
+| Code | Message | HTTP Status |
+|------|---------|--------------|
+| `AUTH001` | unauthorized: missing or invalid token | 401 |
+| `AUTH002` | unauthorized: missing client_id claim | 401 |
+| `AUTH501` | internal authentication error | 500 |
+| `CE000` | client authentication failed | 403 |
+| `CE001` | unknown client_id | 403 |
+| `CE002` | multiple APIs assigned to your client_id | 403 |
+| `CE003` | inactive client_id | 403 |
+| `CE004` | organization not found for client_id | 403 |
+| `CE005` | multiple organizations assigned to your client_id | 403 |
+
+## Send Business Document to Peppol Network
+
+| Code | Message | HTTP Status |
+|------|---------|--------------|
+| `SA001` | document approuved for sending | 200 |
+| `SE000` | invalid HTTP Content-Type | 400 |
+| `SE001` | not well-formed XML document | 400 |
+| `SE002` | unsupported UBL | 400 |
+| `SE003` | undetermined UBL (unable to determine UBL) | 400 |
+| `SE004` | document validation failed | 400 |
+| `SE005` | document Id is already used | 400 |
+| `SE006` | participant not found in organization | 400 |
+| `SE500` | Internal server error | 500 |
+| `SE501` | failed to process request | 500 |
+| `SE502` | failed to add to outgoing queue | 500 |
+| `SE503` | failed to check document Id | 500 |
+| `SE504` | unable to validate document | 500 |
+
+
+## Receive Business Document from Peppol Network
+
+| Code | Message | HTTP Status |
+|------|---------|--------------|
+| `RA000` | file returned to client | 200 |
+| `RE000` | no document found with the provided ID | 404 |
+| `RE001` | file not found on server | 404 |
+| `RE002` | missing or empty 'docId' parameter | 400 |
+| `RE003` | missing or empty 'flow' parameter | 400 |
+| `RE500` | internal error | 500 |
+| `RE501` | failed to process request | 500 |
+
+
+## Retrieve List of Business Documents
+
+| Code | Message | HTTP Status |
+|------|---------|--------------|
+| `LA000` | list returned to client | 200 |
+| `LE000` | missing one or more required parameters: startDate, endDate, flow | 400 |
+| `LE001` | date format must be yyyyMMddHHmmss | 400 |
+| `LE002` | endDate must be greater than or equal to startDate | 400 |
+| `LE003` | parameter flow must be one of [in, out] | 400 |
+| `LE500` | internal error | 500 |
+| `LE501` | failed to process request | 500 |
+
+
+## Add Participant
+
+| Code | Message | HTTP Status |
+|------|---------|--------------|
+| `PMC00` | participant created successfully | 200 |
+| `PMC01` | missing required fields | 400 |
+| `PMC02` | invalid ISO country code | 400 |
+| `PMC03` | invalid email format | 400 |
+| `PMC04` | participant scheme is inactive or unknown (example correct values: 0208, 9925, ...) | 400 |
+| `PMC05` | participant prefix is incorrect (must be iso6523-actorid-upis) | 400 |
+| `PMC06` | duplicate participant identifier | 400 |
+| `PMC07` | failed to create participant | 500 |
+| `PM500` | internal error | 500 |
+
+
+## Update Participant
+
+| Code | Message | HTTP Status |
+|------|---------|--------------|
+| `PMU00` | participant updated successfully | 200 |
+| `PMU01` | missing required fields | 400 |
+| `PMU02` | invalid ISO country code | 400 |
+| `PMU03` | invalid email format | 400 |
+| `PMU04` | participant scheme is inactive or unknown (example correct values: 0208, 9925, ...) | 400 |
+| `PMU05` | participant prefix is incorrect (must be iso6523-actorid-upis) | 400 |
+| `PMU06` | participant not found or not owned by specified client | 404 |
+| `PMU07` | failed to update participant | 500 |
+| `PM500` | internal error | 500 |
+
+
+## Delete a Participant
+
+| Code | Message | HTTP Status |
+|------|---------|--------------|
+| `PMD00` | participant deleted successfully | 200 |
+| `PMD01` | missing participant ID for deletion | 400 |
+| `PMD02` | invalid participant ID format | 400 |
+| `PMD03` | participant not found or not owned by specified client | 404 |
+| `PMD04` | failed to delete participant | 500 |
+| `PM500` | internal error | 500 |
+
+
+## Participants List
+
+| Code | Message | HTTP Status |
+|------|---------|--------------|
+| `PLA00` | list returned to client | 200 |
+| `PL501` | failed to retrieve list | 500 |
