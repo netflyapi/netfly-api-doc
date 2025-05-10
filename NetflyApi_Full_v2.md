@@ -551,12 +551,12 @@ A webhook lets your ERP receive immediate notifications from Netfly about incomi
 When the webhook is created, Netfly automatically generates a unique webhook secret. Netfly uses this secret to produce a digital signature, which it adds to an HTTP header in every request it sends to your ERP.
 Your ERP can use the same secret to verify the signature, confirming that each request genuinely comes from Netfly.
 
+## 📥 Register or Update Webhook (POST)
+
 ### 🌐 Endpoint
 `POST /netfly/webhook`
 
-## 📥 Register or Update Webhook (POST)
-
-### cURL Example
+### 🧪 cURL Example
 
 ```bash
 curl -X POST https://peppol2.netfly.be/netfly/webhook \
@@ -612,9 +612,12 @@ curl -X POST https://peppol2.netfly.be/netfly/webhook \
 }
 ```
 
-## 📤 Get Webhook Info (GET)
+## 📤 Get Webhook Info
 
-### cURL Example
+### 🌐 Endpoint
+`GET /netfly/webhook`
+
+### 🧪 cURL Example
 
 ```bash
 curl -X GET https://peppol2.netfly.be/netfly/webhook \
@@ -643,9 +646,12 @@ curl -X GET https://peppol2.netfly.be/netfly/webhook \
 }
 ```
 
-## 🗑️ Delete Webhook (DELETE)
+## 🗑️ Delete Webhook
 
-### cURL Example
+### 🌐 Endpoint
+`DELETE /netfly/webhook`
+
+### 🧪 cURL Example
 
 ```bash
 curl -X DELETE https://peppol2.netfly.be/netfly/webhook \
