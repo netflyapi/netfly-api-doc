@@ -13,7 +13,7 @@ Welcome to the Netfly Peppol REST API documentation. This API is designed to all
 
 ## 🏗️ Architecture
 
-The API is built on modern programing languages and is protected with Auth0 JWT tokens. All endpoints accept and return data in JSON or XML format, depending on the operation. The system is designed to interoperate with ERP systems via REST calls, making integration flexible and secure.
+The API is built on modern programing languages and is protected by Auth0 Authorization Server with OAuth2 flow (JWT tokens). All endpoints accept and return data in JSON or XML format, depending on the operation. The system is designed to interoperate with ERP systems via REST calls, making integration flexible and secure.
 
 ## 🧾 Version
 
