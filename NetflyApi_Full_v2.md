@@ -175,7 +175,7 @@ curl -X POST https://peppol2.netfly.be/netfly/sendDocument \
 {
   "success": false,
   "message": "undetermined UBL (unable to determine UBL)",
-  "code": "SE004"
+  "code": "SE003"
 }
 ```
 
@@ -320,7 +320,7 @@ If the document is not found or does not belong to the authenticated client:
 {
   "success": false,
   "message": "no document found with the provided ID and client number",
-  "code": "RE001"
+  "code": "RE000"
 }
 ```
 
@@ -377,7 +377,7 @@ curl -X POST https://peppol2.netfly.be/netfly/participantManagement \
 {
   "success": false,
   "message": "Duplicate participant identifier",
-  "code": "PM005"
+  "code": "PMC06"
 }
 ```
 
@@ -432,7 +432,7 @@ curl -X PUT https://peppol2.netfly.be/netfly/participantManagement \
 {
   "success": false,
   "message": "Participant prefix is incorrect - must be iso6523-actorid-upis",
-  "code": "PM007"
+  "code": "PMU05"
 }
 ```
 
@@ -495,8 +495,8 @@ If something goes wrong (e.g., unauthorized request), a standard error object wi
 ```json
 {
   "success": false,
-  "message": "unauthorized access",
-  "code": "CE001"
+  "message": "internal server error",
+  "code": "PL501"
 }
 ```
 
@@ -540,7 +540,7 @@ curl -X DELETE "https://peppol2.netfly.be/netfly/participantManagement?id=5" \
 {
   "success": false,
   "message": "Participant not found or not owned by your client",
-  "code": "PM012"
+  "code": "PMD03"
 }
 ```
 
