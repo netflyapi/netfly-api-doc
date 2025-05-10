@@ -22,6 +22,7 @@ The Netfly API allows your system to:
 - Manage participants (sender identifiers)
 - Validate invoices against Peppol rules
 - Query status of submissions
+- Push received documents to client's ERP (Webhook)
 
 You will find examples using curl and detailed explanation of response codes, data fields, and security requirements.
 
