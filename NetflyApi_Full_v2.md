@@ -13,12 +13,12 @@ Welcome to the Netfly Peppol REST API documentation. This API is designed to all
 
 ## 🏗️ Architecture
 
-The API is built on modern Jakarta EE standards and is protected with Auth0 JWT tokens. All endpoints accept and return data in JSON or XML format, depending on the operation. The system is designed to interoperate with ERP systems via REST calls, making integration flexible and secure.
+The API is built on modern programing languages and is protected with Auth0 JWT tokens. All endpoints accept and return data in JSON or XML format, depending on the operation. The system is designed to interoperate with ERP systems via REST calls, making integration flexible and secure.
 
 ## 🧾 Version
 
-- API Version: 2.1
-- Last Update: 12 April 2025
+- API Version: 2.2
+- Last Update: 10 May 2025
 
 ## 🧰 Requirements
 
