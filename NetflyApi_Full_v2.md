@@ -551,7 +551,7 @@ A webhook lets your ERP receive immediate notifications from Netfly about incomi
 When the webhook is created, Netfly automatically generates a unique webhook secret. Netfly uses this secret to produce a digital signature, which it adds to an HTTP header in every request it sends to your ERP.
 Your ERP can use the same secret to verify the signature, confirming that each request genuinely comes from Netfly.
 
-## 📥 Register or Update Webhook (POST)
+## 📥 Register or Update Webhook
 
 ### 🌐 Endpoint
 `POST /netfly/webhook`
