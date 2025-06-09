@@ -18,7 +18,7 @@ The API is built on modern programing languages and is protected by Auth0 Author
 ## 🧾 Version
 
 - API Version: 2.2
-- Last Update: 10 May 2025
+- Last Update: 09 June 2025
 
 ## 🧰 Requirements
 
@@ -166,7 +166,7 @@ curl -X POST https://peppol2.netfly.be/netfly/sendDocument \
 ```json
 {
   "success": true,
-  "message": "XML reception acknowledged",
+  "message": "document approuved for sending",
   "code": "SA001"
 }
 ```
@@ -320,7 +320,7 @@ If the document is not found or does not belong to the authenticated client:
 ```json
 {
   "success": false,
-  "message": "no document found with the provided ID and client number",
+  "message": "no document found with the provided ID",
   "code": "RE000"
 }
 ```
