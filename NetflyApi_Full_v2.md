@@ -505,7 +505,7 @@ If something goes wrong (e.g., unauthorized request), a standard error object wi
 ---
 # 🗑️ Delete a Participant
 
-This endpoint allows the API user to delete a participant that belongs to them, by specifying the participant’s `id`.
+This endpoint allows the API user to delete a participant that belongs to him, by specifying the participant’s `id`.
 
 ⚠️ Only participants that belong to the authenticated client can be deleted.
 
