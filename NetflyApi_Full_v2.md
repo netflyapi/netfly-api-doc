@@ -368,7 +368,7 @@ curl -X POST https://peppol2.netfly.be/netfly/participantManagement \
 {
   "success": true,
   "message": "Participant created successfully",
-  "code": "PM000"
+  "code": "PMC00"
 }
 ```
 
