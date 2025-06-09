@@ -531,7 +531,7 @@ curl -X DELETE "https://peppol2.netfly.be/netfly/participantManagement?id=5" \
 {
   "success": true,
   "message": "Participant deleted successfully",
-  "code": "PM013"
+  "code": "PMD00"
 }
 ```
 
