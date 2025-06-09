@@ -423,7 +423,7 @@ curl -X PUT https://peppol2.netfly.be/netfly/participantManagement \
 {
   "success": true,
   "message": "Participant updated successfully",
-  "code": "PM000"
+  "code": "PMU00"
 }
 ```
 
