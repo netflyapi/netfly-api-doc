@@ -1,4 +1,4 @@
-# 📄 Netfly Peppol REST API – Documentation v2.2
+# 📄 Netfly Peppol REST API – Documentation v3.0
 
 Welcome to the Netfly Peppol REST API documentation. This API is designed to allow secure and efficient exchange of business documents (such as invoices) with the Peppol network. In addition to sending and receiving documents, it also allows clients to manage their own list of Peppol participants through a RESTful interface.
 
@@ -17,8 +17,8 @@ The API is built on modern programing languages and is protected by Auth0 Author
 
 ## 🧾 Version
 
-- API Version: 2.2
-- Last Update: 09 June 2025
+- API Version: 3.0
+- Last Update: August 28, 2025
 
 ## 🧰 Requirements
 
@@ -358,7 +358,15 @@ curl -X POST https://peppol2.netfly.be/netfly/participantManagement \
     "contactType": "CEO",
     "contactName": "John Doe",
     "contactPhone": "+32 475 123456",
-    "contactEmail": "john@company.be"
+    "contactEmail": "john@company.be",
+    "documentTypes": [
+      "PEPPOL_BIS_BILLING_UBL_INVOICE_V3",
+      "PEPPOL_BIS_BILLING_UBL_CREDITNOTE_V3",
+      "PEPPOL_INVOICE_RESPONSE_3",
+      "PEPPOL_ORDER_TRANSACTION_3",
+      "EN_16931_CII_INVOICE",
+      "PEPPOL_MESSAGE_LEVEL_STATUS_1"
+    ]
 }'
 ```
 
@@ -413,7 +421,11 @@ curl -X PUT https://peppol2.netfly.be/netfly/participantManagement \
     "contactType": "OWNER",
     "contactName": "John Doe",
     "contactPhone": "+32 475 123456",
-    "contactEmail": "john@company.be"
+    "contactEmail": "john@company.be",
+    "documentTypes": [
+      "PEPPOL_BIS_BILLING_UBL_INVOICE_V3",
+      "PEPPOL_ORDER_TRANSACTION_3"
+    ]
 }'
 ```
 
@@ -422,8 +434,10 @@ curl -X PUT https://peppol2.netfly.be/netfly/participantManagement \
 ```json
 {
   "success": true,
+  "code": "PMU00",
   "message": "Participant updated successfully",
-  "code": "PMU00"
+  "addedDocumentTypes": ["PEPPOL_ORDER_TRANSACTION_3"],
+  "deletedDocumentTypes": ["PEPPOL_BIS_BILLING_UBL_CREDITNOTE_V3"]
 }
 ```
 
@@ -898,3 +912,4 @@ The validation report confirms compliance with Peppol standards if all rulesets 
 | `WHD00` | webhook deleted successfully | 200 |
 | `WH003` | no webhook registered for the client | 404 |
 | `WH500` | internal error | 500 |
+
