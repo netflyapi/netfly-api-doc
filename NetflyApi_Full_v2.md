@@ -702,7 +702,7 @@ When a new document is received by Netfly, the API automatically dispatches a we
   - `Content-Type: application/json`
   - `X-Webhook-Signature`: Base64-encoded HMAC-SHA256 signature of the request body, generated using your **webhook secret**.
   - `X-Webhook-Timestamp`: Current time
-  - `X-Webhook-Event`: Type of event (e.g. documentReceived)
+  - `X-Webhook-Event`: Type of event (e.g. "documentReceived")
 
 ### 📥 Example JSON Payload
 ```json
@@ -713,6 +713,7 @@ When a new document is received by Netfly, the API automatically dispatches a we
   "senderCountry": "BE"
   "recipient": "0208:0486243141"
   "documentId": "1234",
+  "documentType": urn:fdc:peppol.eu:2017:poacc:billing:01:1.0
   "vesid": "eu.peppol.bis3:invoice:2024.5"
   "downloadUrl": "SFTP_SERVER"
 }
@@ -950,5 +951,6 @@ The validation report confirms compliance with Peppol standards if all rulesets 
 | `WHD00` | webhook deleted successfully | 200 |
 | `WH003` | no webhook registered for the client | 404 |
 | `WH500` | internal error | 500 |
+
 
 
