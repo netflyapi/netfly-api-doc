@@ -693,6 +693,44 @@ curl -X DELETE https://peppol2.netfly.be/netfly/webhook \
 }
 ```
 
+## 📤 Webhook Notification
+When a new document is received by Netfly, the API automatically dispatches a webhook notification to the URL you registered.
+
+### 🔧 HTTP Method & Headers
+- Method: `POST`
+- Headers:
+  - `Content-Type: application/json`
+  - `X-Webhook-Signature`: Base64-encoded HMAC-SHA256 signature of the request body, generated using your **webhook secret**.
+  - `X-Webhook-Timestamp`: Current time
+  - `X-Webhook-Event`: Type of event (e.g. documentReceived)
+
+### 📥 Example JSON Payload
+```json
+{
+  "event": "documentReceived",
+  "timestamp": "2025-08-14T09:34:15Z",
+  "sender": "9925:BE0475689186"
+  "senderCountry": "BE"
+  "recipient": "0208:0486243141"
+  "documentId": "1234",
+  "vesid": "eu.peppol.bis3:invoice:2024.5"
+  "downloadUrl": "SFTP_SERVER"
+}
+```
+
+If the user enabled `includeXmlPayload=true` when registering, then the payload additionally contains:
+
+```json
+"xmlBase64": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGlu... (base64-encoded full UBL XML)"
+```
+
+### ✅ Verifying the Signature
+1. Retrieve the body as a raw string.
+2. Compute `HMAC_SHA256(body, webhookSecret)` with your secret.
+3. Base64-encode the result.
+4. Compare it with the value of the `X-Webhook-Signature` header.
+
+Only if the values match should the notification be trusted.
 
 ---
 # 📄✅ Validate a Peppol BIS Billing 3.0 Document
@@ -912,4 +950,5 @@ The validation report confirms compliance with Peppol standards if all rulesets 
 | `WHD00` | webhook deleted successfully | 200 |
 | `WH003` | no webhook registered for the client | 404 |
 | `WH500` | internal error | 500 |
+
 
