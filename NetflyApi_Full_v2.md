@@ -1,4 +1,4 @@
-# 📄 Netfly Peppol REST API – Documentation v3.0
+# 📄 Netfly Peppol REST API – Documentation v 3.0
 
 Welcome to the Netfly Peppol REST API documentation. This API is designed to allow secure and efficient exchange of business documents (such as invoices) with the Peppol network. In addition to sending and receiving documents, it also allows clients to manage their own list of Peppol participants through a RESTful interface.
 
@@ -713,7 +713,7 @@ When a new document is received by Netfly, the API automatically dispatches a we
   "senderCountry": "BE"
   "recipient": "0208:0486243141"
   "documentId": "1234",
-  "documentType": urn:fdc:peppol.eu:2017:poacc:billing:01:1.0
+  "documentType": "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0"
   "vesid": "eu.peppol.bis3:invoice:2024.5"
   "downloadUrl": "SFTP_SERVER"
 }
@@ -951,6 +951,7 @@ The validation report confirms compliance with Peppol standards if all rulesets 
 | `WHD00` | webhook deleted successfully | 200 |
 | `WH003` | no webhook registered for the client | 404 |
 | `WH500` | internal error | 500 |
+
 
 
 
