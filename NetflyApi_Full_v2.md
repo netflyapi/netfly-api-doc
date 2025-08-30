@@ -113,7 +113,6 @@ If the request is successful, Auth0 will return a JSON response like the followi
 ```json
 {
   "access_token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...Abc123XYZ",
-  "scope": "read:actions update:actions delete:actions create:actions",
   "expires_in": 86400,
   "token_type": "Bearer"
 }
@@ -951,6 +950,7 @@ The validation report confirms compliance with Peppol standards if all rulesets 
 | `WHD00` | webhook deleted successfully | 200 |
 | `WH003` | no webhook registered for the client | 404 |
 | `WH500` | internal error | 500 |
+
 
 
 
