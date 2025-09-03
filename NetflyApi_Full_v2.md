@@ -741,17 +741,28 @@ This special endpoint is a powerful tool for API users, enabling them to verify 
 
 The endpoint is used to validate Peppol BIS Billing 3.0 (latest version) documents in XML format.
 
-- URL: `https://peppol2.netfly.be/docval/api/validate/eu.peppol.bis3:invoice:latest`
+- URL: `https://peppol2.netfly.be/netfly/validate/eu.peppol.bis3:invoice:latest`
 - Method: `POST`
 - Content-Type: `application/xml`
-- Header: `X-Token: SPECIAL_TOKEN`
+- Authorization: `Bearer YOUR_ACCESS_TOKEN`
 - Body: Raw XML invoice document
+
+### 🌐 Endpoint
+`POST /netfly/validate/{vesid}`
+
+### Path Parameters
+
+| Name   | Type   | Required | Description |
+|--------|--------|----------|-------------|
+| vesid  | string | Yes      | Validation identifier (e.g. `eu.peppol.bis3:invoice:latest`) |
 
 ### 🧪 cURL Example
 
 ```bash
-curl -X POST \ 
-  -H "Content-Type: application/xml"   -H "X-Token: SPECIAL_TOKEN"   -d @Path/To/invoice_from.xml   https://peppol2.netfly.be/docval/api/validate/eu.peppol.bis3:invoice:latest
+curl -X POST https://peppol2.netfly.be/netfly/validate/eu.peppol.bis3:invoice:latest \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/xml" \
+  -d @Path/To/invoice_from.xml
 ```
 
 ### ✅ Response (Success)
@@ -950,6 +961,7 @@ The validation report confirms compliance with Peppol standards if all rulesets 
 | `WHD00` | webhook deleted successfully | 200 |
 | `WH003` | no webhook registered for the client | 404 |
 | `WH500` | internal error | 500 |
+
 
 
 
