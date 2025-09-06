@@ -560,6 +560,67 @@ curl -X DELETE "https://peppol2.netfly.be/netfly/participantManagement?id=5" \
 }
 ```
 
+
+---
+# 🔎 Participant Lookup (existence + document types)
+
+Check if a participant exists in the Peppol network and, if found, retrieve the supported document types.
+
+### 🌐 Endpoint
+`GET //netfly/participantLookup?scheme={scheme}&participant_id={participant_id}`
+
+- **Auth**: `Authorization: Bearer <ACCESS_TOKEN>`
+- **Query params**:
+  - `scheme` – Peppol scheme (e.g., `9925` or `0208`)
+  - `participant_id` – Identifier value (e.g., `BE0475689186`)
+- The Peppol environment (`digittest` / `digitprod`) is taken from server configuration.
+
+### 🧪 cURL Example
+
+```bash
+curl -X GET "https://peppol2.netfly.be/netfly/participantLookup?scheme=0208&participant_id=0475689186" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Accept: application/json"
+```
+
+### ✅ Successful Response (found)
+
+```json
+{
+  "success": true,
+  "code": "PLK00",
+  "participantID": "iso6523-actorid-upis::0208:0475689186",
+  "environment": "digittest",
+  "exists": true,
+  "sml": "digittest",
+  "smpHostURI": "http://smp.netfly.eu.com",
+  "documentTypes": [
+    {
+      "documentTypeID": "busdox-docid-qns::urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0::2.1",
+      "niceName": "Peppol BIS Billing UBL Invoice V3",
+      "state": "act",
+      "isDeprecated": false
+    }
+  ],
+  "queryDurations": { "helgerMillis": 48, "smpToolMillis": 799 }
+}
+```
+
+### ❌ Unsuccessful Response (not found)
+
+```json
+{
+  "success": true,
+  "code": "PLK00",
+  "participantID": "iso6523-actorid-upis::9925:BE0000000000",
+  "environment": "digitprod",
+  "exists": false,
+  "documentTypes": [],
+  "queryDurations": { "helgerMillis": 42, "smpToolMillis": 0 }
+}
+```
+
+
 ---
 # 🔔 Webhook 
 
@@ -963,6 +1024,7 @@ The validation report confirms compliance with Peppol standards if all rulesets 
 | `WHD00` | webhook deleted successfully | 200 |
 | `WH003` | no webhook registered for the client | 404 |
 | `WH500` | internal error | 500 |
+
 
 
 
