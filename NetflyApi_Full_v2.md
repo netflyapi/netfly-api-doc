@@ -525,7 +525,7 @@ This endpoint allows the API client to delete a participant that belongs to him,
 ⚠️ Only participants that belong to the authenticated client can be deleted.
 
 ### 🌐 Endpoint
-`DELETE /netfly/participantManagement?id={participant_id}`
+`DELETE /netfly/participantManagement?id={id}`
 
 ### 📥 Parameters
 
@@ -569,11 +569,12 @@ Check if a participant exists in the Peppol network and, if found, retrieve the 
 ### 🌐 Endpoint
 `GET //netfly/participantLookup?scheme={scheme}&participant_id={participant_id}`
 
-- **Auth**: `Authorization: Bearer <ACCESS_TOKEN>`
-- **Query params**:
-  - `scheme` – Peppol scheme (e.g., `9925` or `0208`)
-  - `participant_id` – Identifier value (e.g., `BE0475689186`)
-- The Peppol environment (`digittest` / `digitprod`) is taken from server configuration.
+### 📥 Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| scheme   | string  | Yes      | Scheme code of the paticipant |
+| participant_id   | string  | Yes      | Paticipant's Peppol Id (party endpoint) |
 
 ### 🧪 cURL Example
 
@@ -1024,6 +1025,7 @@ The validation report confirms compliance with Peppol standards if all rulesets 
 | `WHD00` | webhook deleted successfully | 200 |
 | `WH003` | no webhook registered for the client | 404 |
 | `WH500` | internal error | 500 |
+
 
 
 
