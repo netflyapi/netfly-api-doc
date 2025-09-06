@@ -239,7 +239,8 @@ curl -X GET "https://peppol2.netfly.be/netfly/documentsList?startDate=2025020100
     "feedback": "SUCCESSFULLY SUBMITTED TO AP",
     "retries": 1,
     "lastTry": "2025-03-16T09:18:56Z",
-    "fileName": "fc7b5afc-173c-412e-ac66-0d27415a30f7.xml"
+    "fileName": "fc7b5afc-173c-412e-ac66-0d27415a30f7.xml",
+    "apMessage": ""
   }
 ]
 ```
@@ -262,7 +263,8 @@ curl -X GET "https://peppol2.netfly.be/netfly/documentsList?startDate=2025020100
     "feedback": "SUBMISSION TO AP FAILED",
     "retries": 2,
     "lastTry": "2025-04-12T20:12:27Z",
-    "fileName": "2d77c966-c85a-4a34-9d69-4ad063f0cffd.xml"
+    "fileName": "2d77c966-c85a-4a34-9d69-4ad063f0cffd.xml",
+		"apMessage": "Failed to resolve 'ht2raww3yfofj35goyqz6zavl3qxesvbpv4qkdnroovk64keyfoq.iso6523-actorid-upis.acc.edelivery.tech.ec.europa.eu' and service 'Meta:SMP' to a DNS U-NAPTR"
   }
 ]
 ```
@@ -961,6 +963,7 @@ The validation report confirms compliance with Peppol standards if all rulesets 
 | `WHD00` | webhook deleted successfully | 200 |
 | `WH003` | no webhook registered for the client | 404 |
 | `WH500` | internal error | 500 |
+
 
 
 
