@@ -351,9 +351,13 @@ curl -X POST https://peppol2.netfly.be/netfly/participantManagement \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Company SA",
+    "street": "Rue de la Station",
+    "streetNr": "212",
+    "zip": "4219",
+    "city": "Wasseiges",
     "country": "BE",
-    "participantId": "be0123456789",
-    "participantScheme": "9925",
+    "participantId": "0123456789",
+    "participantScheme": "0208",
     "participantPrefix": "iso6523-actorid-upis",
     "webURI": "https://www.company.be",
     "contactType": "CEO",
@@ -414,6 +418,10 @@ curl -X PUT https://peppol2.netfly.be/netfly/participantManagement \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Company SA",
+    "street": "Rue de la Station",
+    "streetNr": "212",
+    "zip": "4219",
+    "city": "Wasseiges",
     "country": "BE",
     "participantId": "be0123456789",
     "participantScheme": "9925",
@@ -1025,6 +1033,7 @@ The validation report confirms compliance with Peppol standards if all rulesets 
 | `WHD00` | webhook deleted successfully | 200 |
 | `WH003` | no webhook registered for the client | 404 |
 | `WH500` | internal error | 500 |
+
 
 
 
