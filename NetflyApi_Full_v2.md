@@ -653,12 +653,12 @@ Retrieve the XML representation of an existing Business Card in the SMP.
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
 | scheme   | string  | Yes      | Participant scheme (e.g. 0208) |
-| participant_id   | string  | Yes      | Participant identifier (e.g. 0475689186) |
+| participantId   | string  | Yes      | Participant identifier (e.g. 0475689186) |
 
 ### 🧪 cURL Example
 
 ```bash
-curl -X GET "https://peppol2.netfly.be/netfly/businessCard?scheme=0208&participant_id=0475689186" \
+curl -X GET "https://peppol2.netfly.be/netfly/businessCard?scheme=0208&participantId=0475689186" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
@@ -686,12 +686,12 @@ curl -X GET "https://peppol2.netfly.be/netfly/businessCard?scheme=0208&participa
 You can publish or update a Business Card for a participant. Uses participant data already stored in the Netfly database.
 
 ### 🌐 Endpoint
-`POST /netfly/businessCard?scheme={scheme}&participant_id={participantId}`
+`POST /netfly/businessCard?scheme={scheme}&participantId={participantId}`
 
 ### 🧪 cURL Example
 
 ```bash
-curl -X POST "https://peppol2.netfly.be/netfly/businessCard?scheme=0208&participant_id=0475689186" \
+curl -X POST "https://peppol2.netfly.be/netfly/businessCard?scheme=0208&participantId=0475689186" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
@@ -719,12 +719,12 @@ curl -X POST "https://peppol2.netfly.be/netfly/businessCard?scheme=0208&particip
 Deletes an existing Business Card from the Peppol directory.
 
 ### 🌐 Endpoint
-`DELETE /netfly/businessCard?scheme={scheme}&participant_id={participantId}`
+`DELETE /netfly/businessCard?scheme={scheme}&participantId={participantId}`
 
 ### 🧪 cURL Example
 
 ```bash
-curl -X DELETE "https://peppol2.netfly.be/netfly/businessCard?scheme=0208&participant_id=0475689186" \
+curl -X DELETE "https://peppol2.netfly.be/netfly/businessCard?scheme=0208&participantId=0475689186" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
@@ -1153,6 +1153,7 @@ The validation report confirms compliance with Peppol standards if all rulesets 
 | `WHD00` | webhook deleted successfully | 200 |
 | `WH003` | no webhook registered for the client | 404 |
 | `WH500` | internal error | 500 |
+
 
 
 
