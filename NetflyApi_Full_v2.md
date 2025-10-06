@@ -631,6 +631,126 @@ curl -X GET "https://peppol2.netfly.be/netfly/participantLookup?scheme=0208&part
 
 
 ---
+# 💼 Business Card Management
+
+The Business Card API allows you to view, publish, update, or delete a participant’s Peppol Directory Business Card.
+Each Business Card corresponds to one participant in your organization and is managed directly through the Netfly's SMP.
+
+## 🧾 Overview
+- Each Business Card corresponds to a Peppol participant (e.g. iso6523-actorid-upis::0208:0475689186).
+- Business Card data (name, contact info, address, etc.) comes from the participant’s record in the Netfly database.
+- Only participants belonging to your organization can be managed.
+- The Business Card is published through the Netfly's SMP.
+
+## 📖 Retrieve an Existing Business Card
+Retrieve the XML representation of an existing Business Card in the SMP.
+
+### 🌐 Endpoint
+`GET /netfly/businessCard?scheme={scheme}&participant_id={participantId}`
+
+### 📥 Parameters
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| scheme   | string  | Yes      | Participant scheme (e.g. 0208) |
+| participant_id   | string  | Yes      | Participant identifier (e.g. 0475689186) |
+
+### 🧪 cURL Example
+
+```bash
+curl -X GET "https://peppol2.netfly.be/netfly/businessCard?scheme=0208&participant_id=0475689186" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+### ✅ Successful Response
+
+```json
+{
+  "success": true,
+  "participant": "iso6523-actorid-upis::0208:0475689186",
+  "businessCardXml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><BusinessCard xmlns=\"http://www.peppol.eu/schema/pd/businesscard/20180621/\">...</BusinessCard>"
+}
+```
+
+### ❌ Unsuccessful Response
+
+```json
+{
+  "success": false,
+  "message": "Business card not found in SMP",
+  "code": "BCG404"
+}
+```
+
+## 🏗️ Publish or Update a Business Card
+You can publish or update a Business Card for a participant. Uses participant data already stored in the Netfly database.
+
+### 🌐 Endpoint
+`POST /netfly/businessCard?scheme={scheme}&participant_id={participantId}`
+
+### 🧪 cURL Example
+
+```bash
+curl -X POST "https://peppol2.netfly.be/netfly/businessCard?scheme=0208&participant_id=0475689186" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+### ✅ Successful Response
+
+```json
+{
+  "success": true,
+  "message": "Business card published successfully",
+  "code": "BCP00"
+}
+```
+
+### ❌ Unsuccessful Response
+
+```json
+{
+  "success": false,
+  "message": "Failed to publish business card to SMP",
+  "code": "BCP01"
+}
+```
+
+## 🗑️ Delete a Business Card
+Deletes an existing Business Card from the Peppol directory.
+
+### 🌐 Endpoint
+`DELETE /netfly/businessCard?scheme={scheme}&participant_id={participantId}`
+
+### 🧪 cURL Example
+
+```bash
+curl -X DELETE "https://peppol2.netfly.be/netfly/businessCard?scheme=0208&participant_id=0475689186" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+### ✅ Successful Response
+
+```json
+{
+  "success": true,
+  "message": "Business card deleted successfully",
+  "code": "BCD00"
+}
+```
+
+### ❌ Unsuccessful Response
+
+```json
+{
+  "success": false,
+  "message": "Business card not found or failed to delete",
+  "code": "BCD01"
+}
+```
+
+
+
+---
 # 🔔 Webhook 
 
 A webhook lets your ERP receive immediate notifications from Netfly about incoming business documents sent over the Peppol network. After you register an endpoint, Netfly pushes the documents straight to it.
@@ -1033,6 +1153,7 @@ The validation report confirms compliance with Peppol standards if all rulesets 
 | `WHD00` | webhook deleted successfully | 200 |
 | `WH003` | no webhook registered for the client | 404 |
 | `WH500` | internal error | 500 |
+
 
 
 
