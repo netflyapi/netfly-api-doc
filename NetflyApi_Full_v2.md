@@ -749,6 +749,137 @@ curl -X DELETE "https://peppol2.netfly.be/netfly/businessCard?scheme=0208&partic
 ```
 
 
+---
+# 💼 Participant Document Types
+
+This endpoint allows to manage SMP Service Metadata for an existing participant, so that other participants in Peppol network will see what types of document the participant can receive.
+
+## 💼 Add document types
+
+### 🌐 Endpoint
+`POST /netfly/participantDocuments`
+
+### 📥 Request Format
+
+The request must be sent as JSON and include the following headers:
+
+- `Authorization: Bearer YOUR_ACCESS_TOKEN`
+- `Content-Type: application/json`
+
+### 🧪 cURL Example
+
+```bash
+curl -X POST https://peppol2.netfly.be/netfly/participantDocuments \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "participantPrefix": "iso6523-actorid-upis",
+    "participantScheme": "0208",
+    "participantId": "0475689186",
+    "documentTypes": [
+      "PEPPOL_BIS_BILLING_UBL_INVOICE_V3",
+      "PEPPOL_BIS_BILLING_UBL_CREDITNOTE_V3"
+    ]
+}'
+```
+
+### ✅ Successful Response
+
+```json
+{
+  "success": true,
+  "code": "DTM00",
+  "message": "Document types added",
+  "addedDocumentTypes": [
+    "PEPPOL_BIS_BILLING_UBL_INVOICE_V3",
+    "PEPPOL_BIS_BILLING_UBL_CREDITNOTE_V3"
+  ]
+}
+```
+
+
+## 💼 Delete document types
+
+### 🌐 Endpoint
+`POST /netfly/participantDocuments`
+
+### 📥 Request Format
+
+The request must be sent as JSON and include the following headers:
+
+- `Authorization: Bearer YOUR_ACCESS_TOKEN`
+- `Content-Type: application/json`
+
+### 🧪 cURL Example
+
+```bash
+curl -X DELETE https://peppol2.netfly.be/netfly/participantDocuments \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "participantPrefix": "iso6523-actorid-upis",
+    "participantScheme": "0208",
+    "participantId": "0475689186",
+    "documentTypes": [
+      "PEPPOL_BIS_BILLING_UBL_INVOICE_V3",
+      "PEPPOL_BIS_BILLING_UBL_CREDITNOTE_V3"
+    ]
+}'
+```
+
+### ✅ Successful Response
+
+```json
+{
+  "success": true,
+  "code": "DTD00",
+  "message": "Document types deleted",
+  "deletedDocumentTypes": [
+    "PEPPOL_BIS_BILLING_UBL_INVOICE_V3",
+    "PEPPOL_BIS_BILLING_UBL_CREDITNOTE_V3"
+  ]
+}
+```
+
+## 💼 Delete All document types
+
+### 🌐 Endpoint
+`POST /netfly/participantDocuments`
+
+### 📥 Request Format
+
+The request must be sent as JSON and include the following headers:
+
+- `Authorization: Bearer YOUR_ACCESS_TOKEN`
+- `Content-Type: application/json`
+
+### 🧪 cURL Example
+
+```bash
+curl -X DELETE https://peppol2.netfly.be/netfly/participantDocuments?all=true \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "participantPrefix": "iso6523-actorid-upis",
+    "participantScheme": "0208",
+    "participantId": "0475689186",
+}'
+```
+
+### ✅ Successful Response
+
+```json
+{
+  "success": true,
+  "code": "DTD00",
+  "message": "Document types deleted",
+  "deletedDocumentTypes": [
+    "PEPPOL_BIS_BILLING_UBL_INVOICE_V3",
+    "PEPPOL_BIS_BILLING_UBL_CREDITNOTE_V3"
+  ]
+}
+```
+
 
 ---
 # 🔔 Webhook 
@@ -1153,6 +1284,7 @@ The validation report confirms compliance with Peppol standards if all rulesets 
 | `WHD00` | webhook deleted successfully | 200 |
 | `WH003` | no webhook registered for the client | 404 |
 | `WH500` | internal error | 500 |
+
 
 
 
