@@ -504,7 +504,7 @@ curl -X GET "https://peppol2.netfly.be/netfly/participantsList?name=Netfly&conta
     "contactName": "Robert Kowinski",
     "contactPhone": "+32 486 243 141",
     "contactEmail": "robert@netfly.eu.com",
-    "inputDate": [2025, 2, 14, 6, 50, 58],
+    "inputDate": "2025-02-14T06:50:58Z",
     "clientNumber": "0001"
   }
 ]
@@ -1031,13 +1031,14 @@ When a new document is received by Netfly, the API automatically dispatches a we
 {
   "event": "documentReceived",
   "timestamp": "2025-08-14T09:34:15Z",
-  "sender": "9925:BE0475689186"
-  "senderCountry": "BE"
-  "recipient": "0208:0486243141"
+  "sender": "9925:BE0475689186",
+  "senderCountry": "BE",
+  "recipient": "0208:0486243141",
   "documentId": "1234",
-  "documentType": "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0"
-  "vesid": "eu.peppol.bis3:invoice:2024.5"
-  "downloadUrl": "SFTP_SERVER"
+  "documentType": "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0",
+  "vesid": "eu.peppol.bis3:invoice:2024.5",
+  "downloadUrl": "SFTP_SERVER",
+  "internalId": "123"
 }
 ```
 
@@ -1284,6 +1285,7 @@ The validation report confirms compliance with Peppol standards if all rulesets 
 | `WHD00` | webhook deleted successfully | 200 |
 | `WH003` | no webhook registered for the client | 404 |
 | `WH500` | internal error | 500 |
+
 
 
 
