@@ -370,7 +370,8 @@ curl -X POST https://peppol2.netfly.be/netfly/participantManagement \
       "PEPPOL_INVOICE_RESPONSE_3",
       "PEPPOL_ORDER_TRANSACTION_3",
       "EN_16931_CII_INVOICE",
-      "PEPPOL_MESSAGE_LEVEL_STATUS_1"
+      "PEPPOL_BIS_SELF_BILLING_UBL_INVOICE_V3",
+      "PEPPOL_BIS_SELF_BILLING_UBL_CREDIT_NOTE_V3"
     ]
 }'
 ```
