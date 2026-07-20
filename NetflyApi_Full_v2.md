@@ -1,4 +1,4 @@
-# 📄 Netfly Peppol REST API – Documentation v 3.0
+# 📄 Netfly Peppol REST API – Documentation v 4.0
 
 Welcome to the Netfly Peppol REST API documentation. This API is designed to allow secure and efficient exchange of business documents (such as invoices) with the Peppol network. In addition to sending and receiving documents, it also allows clients to manage their own list of Peppol participants through a RESTful interface.
 
@@ -17,8 +17,8 @@ The API is built on modern programing languages and is protected by Auth0 Author
 
 ## 🧾 Version
 
-- API Version: 3.0
-- Last Update: August 28, 2025
+- API Version: 4.0
+- Last Update: July 20, 2026
 
 ## 🧰 Requirements
 
@@ -889,6 +889,110 @@ A webhook lets your ERP receive immediate notifications from Netfly about incomi
 When the webhook is created, Netfly automatically generates a unique webhook secret. Netfly uses this secret to produce a digital signature, which it adds to an HTTP header in every request it sends to your ERP.
 Your ERP can use the same secret to verify the signature, confirming that each request genuinely comes from Netfly.
 
+## Webhook Delivery & Retry
+
+### Delivery semantics
+
+When a document is received for your account, Netfly sends a notification to
+your registered webhook URL as an HTTP POST. A delivery is considered
+**successful only when your endpoint responds with an HTTP 2xx status code**.
+Any other response (4xx, 5xx), a timeout, or a connection failure counts as a
+failed delivery and triggers the retry mechanism described below.
+
+Webhook delivery is **at-least-once**: in rare cases (for example, when your
+endpoint processed a notification but the 2xx response was lost in transit),
+the same notification may be delivered more than once. Your endpoint MUST
+therefore be idempotent: deduplicate on the `internalId` (or `documentId`)
+field contained in every notification payload.
+
+Your endpoint should respond within 30 seconds; slower responses are treated
+as a timeout.
+
+### Retry schedule
+
+If a delivery fails, Netfly automatically retries on a slow backoff schedule,
+giving your team time to fix the problem on your side:
+
+| Attempt | Time after previous attempt |
+|---------|-----------------------------|
+| 1       | immediately at reception    |
+| 2       | ~15 minutes                 |
+| 3       | ~1 hour                     |
+| 4       | ~6 hours                    |
+| 5       | ~24 hours                   |
+| 6       | ~24 hours                   |
+
+In total: up to 6 attempts over roughly 2 days. After the final attempt
+fails, delivery for that document is abandoned and its webhook status is
+marked as failed.
+
+A failed or abandoned webhook delivery never affects the document itself:
+the document was received by Netfly, remains stored, and stays available for
+retrieval regardless of webhook delivery problems.
+
+### Email notifications on delivery problems
+
+If a technical contact email is registered for your webhook (see below),
+Netfly notifies it in two situations:
+
+- **Warning** — after delivery to your endpoint has failed 3 times in a row
+  for a document (about 1 hour of sustained failure). Retries continue.
+- **Final failure** — when delivery of a document is abandoned after the
+  last attempt.
+
+To avoid flooding your inbox during an outage that affects many documents,
+at most **one such email per 4 hours** is sent per client, even if many
+documents are affected. The email names one affected document as an example;
+others may be affected as well.
+
+A copy of these notifications is also sent to Netfly's operations team.
+
+## Registering a technical contact email
+
+### The `technicalEmail` field
+
+The webhook registration endpoint (`POST /webhook`) accepts an optional
+`technicalEmail` field alongside `url` and `includeXmlPayload`:
+
+```json
+{
+  "url": "https://your-server.example/peppol-webhook",
+  "includeXmlPayload": true,
+  "technicalEmail": "ops@your-company.example"
+}
+```
+
+This address receives the delivery-problem notifications described above.
+We strongly recommend registering one — without it, webhook failures are
+only visible in your own monitoring.
+
+When you register or change the address, a short informational email is
+immediately sent to it, confirming that it will receive webhook failure
+notifications for your account. No action is required on that email; it also
+serves as an immediate check that the address is reachable.
+
+`GET /webhook` returns the currently registered address in the
+`technicalEmail` field of the response.
+
+### Update semantics (the three-state rule)
+
+Because `technicalEmail` is optional, updates follow a three-state rule:
+
+| In your POST body                      | Effect on the stored address    |
+|----------------------------------------|---------------------------------|
+| Field **absent**                       | Unchanged (kept as it is)       |
+| Field present, value `null` or `""`    | **Cleared** (no more emails)    |
+| Field present with a value             | Validated and stored            |
+
+In short: **omit the field to keep your current address**. You only need to
+include `technicalEmail` when you want to set, change, or remove it. This
+means an update that only changes your webhook URL will never accidentally
+erase your registered contact address.
+
+An invalid address (bad format, or longer than 255 characters) is rejected
+with HTTP 400 and error code `WH004`; nothing is changed in that case.
+
+
 ## 📥 Register or Update Webhook
 
 ### 🌐 Endpoint
@@ -903,6 +1007,7 @@ curl -X POST https://peppol2.netfly.be/netfly/webhook \
   -d '{
         "url": "https://client.example.com/peppolWebhook",
         "includeXmlPayload": true
+        "technicalEmail": "technical@client.be"
       }'
 ```
 
@@ -1288,8 +1393,18 @@ The validation report confirms compliance with Peppol standards if all rulesets 
 | `WH500` | internal error | 500 |
 
 
+---
+# ✉️ Peppol Documents Types
 
-
+| display_name | simplified_name | peppol_doc_type_id  | process_id |
+|--------------|-----------------|---------------------|------------|
+| `Peppol BIS Billing UBL Invoice V3` | PEPPOL_BIS_BILLING_UBL_INVOICE_V3 | urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0::2.1 | cenbii-procid-ubl::urn:fdc:peppol.eu:2017:poacc:billing:01:1.0 |
+| `Peppol BIS Billing UBL Credit Note V3` | PEPPOL_BIS_BILLING_UBL_CREDITNOTE_V3 | urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2::CreditNote##urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0::2.1 | cenbii-procid-ubl::urn:fdc:peppol.eu:2017:poacc:billing:01:1.0 |
+| `Peppol Invoice Response transaction 3.0` | PEPPOL_INVOICE_RESPONSE_3 | urn:oasis:names:specification:ubl:schema:xsd:ApplicationResponse-2::ApplicationResponse##urn:fdc:peppol.eu:poacc:trns:invoice_response:3::2.1 | cenbii-procid-ubl::urn:fdc:peppol.eu:poacc:bis:invoice_response:3 |
+| `Peppol Order transaction 3.0` | PEPPOL_ORDER_TRANSACTION_3 | urn:oasis:names:specification:ubl:schema:xsd:Order-2::Order##urn:fdc:peppol.eu:poacc:trns:order:3::2.1 | cenbii-procid-ubl::urn:fdc:peppol.eu:poacc:bis:ordering:3 |
+| `EN 16931 CII Invoice` | EN_16931_CII_INVOICE | urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100::CrossIndustryInvoice##urn:cen.eu:en16931:2017::D16B | cenbii-procid-ubl::urn:fdc:peppol.eu:poacc:en16931:any |
+| `Peppol BIS Self-Billing UBL Invoice V3` | PEPPOL_BIS_SELF_BILLING_UBL_INVOICE_V3 | urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:selfbilling:3.0::2.1 | cenbii-procid-ubl::urn:fdc:peppol.eu:2017:poacc:selfbilling:01:1.0 |
+| `Peppol BIS Self-Billing UBL Credit Note V3` | PEPPOL_BIS_SELF_BILLING_UBL_CREDIT_NOTE_V3 | urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2::CreditNote##urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:selfbilling:3.0::2.1 | cenbii-procid-ubl::urn:fdc:peppol.eu:2017:poacc:selfbilling:01:1.0 |
 
 
 
