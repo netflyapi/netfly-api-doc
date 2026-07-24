@@ -1253,6 +1253,144 @@ curl -X POST https://peppol2.netfly.be/netfly/validate/eu.peppol.bis3:invoice:la
 The validation report confirms compliance with Peppol standards if all rulesets pass successfully.
 
 ---
+# 📒 Ledger Report
+
+## `GET /ledgerReport`
+
+Returns an account statement for your client account over a chosen period:
+every message you sent or received through Netfly, and every billing entry
+booked on your account. The report lets you reconcile your Netfly invoices
+against your actual usage.
+
+The report is always scoped to the authenticated client. Authentication
+works as for the other list endpoints (Bearer token); there is no
+`clientNumber` parameter.
+
+## Parameters
+
+| Parameter   | Required | Format           | Description                                              |
+|-------------|----------|------------------|----------------------------------------------------------|
+| `startDate` | yes      | `yyyyMMddHHmmss` | Start of the period (inclusive). Cannot be before `20260101000000`. |
+| `endDate`   | yes      | `yyyyMMddHHmmss` | End of the period (inclusive). Must be >= `startDate`.   |
+| `format`    | no       | `json` \| `csv`  | Response format. Default: `json`.                        |
+
+Example:
+
+```
+curl -X GET "https://peppol2.netfly.be/netfly/ledgerReport?startDate=20260101000000&endDate=20260731235959&format=csv" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+## Report content
+
+Each row of the report is one of three entry types, identified by `flag`:
+
+| `flag`     | Meaning                              | `quantity`                          | `sender` / `recipient` | `invoiceNumber` / `formula` |
+|------------|--------------------------------------|-------------------------------------|------------------------|------------------------------|
+| `outbound` | A document you sent via Netfly       | always `-1`                         | filled                 | empty                        |
+| `inbound`  | A document you received via Netfly   | always `-1`                         | filled                 | empty                        |
+| `billing`  | A billing entry booked on your account | as booked (see below)             | empty                  | filled (see below)           |
+
+Notes on the content:
+
+- **Message rows count every transmission attempt handled by Netfly**,
+  including documents that ultimately could not be delivered due to
+  network or counterparty problems. Billing follows the same rule.
+- **Billing rows** correspond to the debit entries of your account. Their
+  `quantity` is the booked value: positive for usage billing and package
+  purchases, `0` for subscription fees (a fixed periodic price, unrelated
+  to any quantity), and positive or negative for manual adjustments and
+  corrections.
+- `invoiceNumber` is filled when the billing entry relates to an issued
+  invoice; it may be empty (for example on adjustments).
+- `formula` indicates the commercial formula or entry origin. Possible
+  values: `ASYOUGO_USAGE_BILLED`, `PACKAGE_PURCHASE`, `SUBSCRIPTION_FEE`,
+  `MANUAL_ADJUSTMENT`, `CORRECTION`.
+- Rows are ordered chronologically (`dateTime` ascending).
+
+## JSON response (`format=json`, default)
+
+`Content-Type: application/json`
+
+```json
+{
+  "success": true,
+  "clientNumber": "0989",
+  "startDate": "20260101000000",
+  "endDate": "20260731235959",
+  "rowCount": 4,
+  "entries": [
+    {
+      "dateTime": "2026-02-03 09:15:22",
+      "clientNumber": "0989",
+      "flag": "outbound",
+      "quantity": -1,
+      "sender": "0208:0686548776",
+      "recipient": "0208:0707851560",
+      "invoiceNumber": null,
+      "formula": null
+    },
+    {
+      "dateTime": "2026-02-28 23:59:59",
+      "clientNumber": "0989",
+      "flag": "billing",
+      "quantity": 250,
+      "sender": null,
+      "recipient": null,
+      "invoiceNumber": "INV-2026-0042",
+      "formula": "PACKAGE_PURCHASE"
+    }
+  ]
+}
+```
+
+## CSV response (`format=csv`)
+
+`Content-Type: text/csv`, returned as a file download
+(`Content-Disposition: attachment`). Recommended for long periods and for
+opening in a spreadsheet.
+
+The first line is a header row; fields are comma-separated and quoted per
+RFC 4180 when needed:
+
+```
+dateTime,clientNumber,flag,quantity,sender,recipient,invoiceNumber,formula
+2026-02-03 09:15:22,0989,outbound,-1,0208:0686548776,0208:0707851560,,
+2026-02-28 23:59:59,0989,billing,250,,,INV-2026-0042,PACKAGE_PURCHASE
+```
+
+## Response codes
+
+On success, HTTP 200 with header `Netfly-Code: LR100`.
+
+| Netfly-Code | HTTP | Meaning                                                        |
+|-------------|------|----------------------------------------------------------------|
+| `LR100`     | 200  | Report returned                                                |
+| `CE001`     | 403  | Unknown client                                                 |
+| `CE002`     | 403  | Multiple APIs assigned to the client                           |
+| `CE003`     | 403  | Client API inactive                                            |
+| `LR000`     | 400  | Missing required parameter (`startDate`, `endDate`)            |
+| `LR001`     | 400  | Date format must be `yyyyMMddHHmmss`                           |
+| `LR002`     | 400  | `endDate` must be greater than or equal to `startDate`         |
+| `LR003`     | 400  | `startDate` cannot be before `20260101000000`                  |
+| `LR004`     | 400  | `format` must be one of `json`, `csv`                          |
+| `LR500` / `LR501` | 500 | Internal error while building the report                 |
+
+Error responses are JSON with the usual structure
+(`{"success": false, "message": "...", "code": "..."}`), and the code is
+also exposed in the `Netfly-Code` response header.
+
+## Practical notes
+
+- Both period bounds are inclusive: to cover a full month, use
+  `startDate=20260201000000` and `endDate=20260228235959`.
+- For long periods, prefer `format=csv`: the JSON response contains the
+  entire report in one document.
+- When opening the CSV in Excel with a European locale, use
+  "Data > From Text/CSV" and select the comma as delimiter if the file is
+  not split into columns automatically.
+
+---
 # 🚦 API Operation Result Codes
 
 ## Client Authentication/Authorization
