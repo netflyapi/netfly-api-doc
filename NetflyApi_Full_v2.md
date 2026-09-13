@@ -1544,13 +1544,116 @@ also exposed in the `Netfly-Code` response header.
 | `Peppol BIS Self-Billing UBL Invoice V3` | PEPPOL_BIS_SELF_BILLING_UBL_INVOICE_V3 | urn:oasis:names:specification:ubl:schema:xsd:Invoice-2::Invoice##urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:selfbilling:3.0::2.1 | cenbii-procid-ubl::urn:fdc:peppol.eu:2017:poacc:selfbilling:01:1.0 |
 | `Peppol BIS Self-Billing UBL Credit Note V3` | PEPPOL_BIS_SELF_BILLING_UBL_CREDIT_NOTE_V3 | urn:oasis:names:specification:ubl:schema:xsd:CreditNote-2::CreditNote##urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:selfbilling:3.0::2.1 | cenbii-procid-ubl::urn:fdc:peppol.eu:2017:poacc:selfbilling:01:1.0 |
 
+# 🇫🇷 French E-Invoicing (Mandate 2026)
 
+Netfly extends the same API to the French domestic B2B e-invoicing mandate, in partnership
+with a registered French **Plateforme Agréée** (Approved Platform). Same authentication, same
+endpoints — French entities and flows are handled automatically.
 
+## 🏷️ Register a French Legal Entity
 
+### 🌐 Endpoint
+`POST /fr/legalEntities`
 
+### 🧪 cURL Example
+```bash
+curl -X POST https://service.netfly.eu.com/netfly/fr/legalEntities \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "partner": "ADEMICO",
+        "siren": "850183062",
+        "displayName": "WATERDROP FRANCE SAS",
+        "contactEmail": "finance@example.fr"
+      }'
+```
 
+### ✅ Response (202 — pending approval)
+```json
+{
+  "partner": "ADEMICO",
+  "siren": "850183062",
+  "participantId": "0225:850183062",
+  "displayName": "WATERDROP FRANCE SAS",
+  "status": "PENDING_APPROVAL",
+  "active": false
+}
+```
 
+### 📝 Notes
+- The request creates the entity in **PENDING_APPROVAL**. Activation follows the French
+  regulatory onboarding: a signed opt-in mandate (*accord formel*) and KYB/KYC verification.
+  Your Netfly contact provides the mandate template and the list of required documents.
+- Once **ACTIVE** and published in the French Annuaire, the entity receives domestic French
+  invoices automatically and can send through `/sendDocument`.
+- Check status anytime: `GET /fr/legalEntities?siren=850183062` (omit `siren` to list all).
+- Cancel with `DELETE /fr/legalEntities?siren=...` — refused (409, `FR032`) once documents
+  exist, to protect invoice reception.
 
+## 📤 Sending to France
 
+Nothing changes in how you call `/sendDocument` — routing is automatic per document:
 
+| Your document | Routed via |
+|---|---|
+| French supplier (registered ACTIVE) → French recipient (`0225:`) | French Approved Platform |
+| French supplier **not registered** → French recipient | ❌ rejected `422 FR060` |
+| Any other combination (e.g. Belgian supplier → French recipient) | Classic Peppol |
+
+### 📝 French document rules
+- French CTC identifiers in the UBL (regulated CustomizationID/ProfileID).
+- Invoice number: **unique per (number, year, seller SIREN)** — the French tax platform (PPF)
+  rejects duplicates (`REJ_UNI`) — and **max 20 characters**.
+- Orders are outside the French mandate and always travel classic Peppol.
+
+## 📥 Receiving from France
+
+Identical to Peppol reception (`documentReceived` webhook, `/documentsList`,
+`/receiveDocument`). French documents are delivered in their **original format**:
+`documentVesid` is `fr:ubl`, `fr:cii`, or `fr:facturx` (Factur-X arrives as PDF/A-3).
+
+## 🔔 French Lifecycle Statuses — `frDocumentStatus` Webhook
+
+Your webhook receives a new event type for French lifecycle updates
+(`X-Webhook-Event: frDocumentStatus`). The status travels in the `documentVesid` field:
+
+| Status value | Meaning |
+|---|---|
+| `fr:FR_DEPOSITED` | Invoice deposited (buyer side lifecycle) |
+| `fr:FR_FLUX_RECEIVABLE` / `fr:C5_DOCUMENT_PROCESSED` | Accepted/processed by the French tax platform |
+| `fr:REJECTED:REJ_UNI:G1.45` | **Rejected by the PPF** — reason code included |
+
+On a PPF rejection the document also appears with `transferStatus: FAILED` in
+`/documentsList`, with the full French reason text in the feedback — e.g.
+*Échec du contrôle de l'unicité du F1 ...* Monitor `frDocumentStatus` to catch rejections
+of invoices that were already transmitted successfully.
+
+# 📁 SFTP Channel (alternative to the REST API)
+
+For systems that exchange files more easily than HTTP calls, Netfly offers a per-client
+SFTP channel — same validation, same network routing, same webhooks as the API.
+
+## 🗂️ Folder Contract
+
+| Folder | Direction | Purpose |
+|---|---|---|
+| `OUT/` | you → Netfly | Drop UBL 2.1 files (`*.xml`) to send |
+| `OUT/archives/` | — | Accepted files, renamed `name_yyyyMMdd-HHmmss.xml` |
+| `OUT/errors/` | — | Rejected files + `name.err.txt` with the validation message |
+| `IN/` | Netfly → you | Received documents (uploaded atomically — never a partial file) |
+
+## 📝 Conventions
+- Only `*.xml` in `OUT/`; a file is picked up ~30 seconds after its last modification, so
+  upload-then-rename is safe (and recommended for large files).
+- "Accepted" means validated and queued for sending — the same moment the API returns 200.
+  Send confirmations and failures arrive via your webhooks (`documentSent`,
+  `documentSendingFailed`, `frDocumentStatus`), exactly as for API submissions.
+- Rejections (validation errors, or the French `FR060` onboarding gate) land in
+  `OUT/errors/` with the same message the API would return.
+- Fetch-and-delete from `IN/` — files are not removed automatically.
+
+## 🔐 Access
+- Host: `sftp.netfly.eu.com` (port 22), one chrooted account per client (`sftp` only, no shell).
+- Password or SSH-key authentication. Contact Netfly support to enable the channel and
+  receive your credentials.
 
