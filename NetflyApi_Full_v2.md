@@ -1606,6 +1606,50 @@ Nothing changes in how you call `/sendDocument` — routing is automatic per doc
   rejects duplicates (`REJ_UNI`) — and **max 20 characters**.
 - Orders are outside the French mandate and always travel classic Peppol.
 
+## 📄 Sending Factur-X (`/fr/sendDocument`)
+
+If your software generates **Factur-X** (the hybrid PDF + XML format, the most widely used
+in France), you can submit it directly — no conversion to UBL needed.
+
+### 🌐 Endpoint
+`POST /fr/sendDocument` — French **domestic** flows only (French supplier → French recipient).
+
+### 🧪 cURL Example
+```bash
+curl -X POST https://peppol2.netfly.be/netfly/fr/sendDocument \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/pdf" \
+  -H "X-Netfly-Fr-Sender: 0225:850183062" \
+  -H "X-Netfly-Fr-Recipient: 0225:123456789" \
+  --data-binary @invoice.pdf
+```
+
+### ✅ Response (200)
+```json
+{
+  "success": true,
+  "code": "SA001",
+  "message": "Factur-X accepted for sending",
+  "outboundId": 10234,
+  "documentId": "INV-2026-001"
+}
+```
+
+### 📝 Rules & notes
+- **Profiles accepted: BASIC WL, EN 16931, EXTENDED.** MINIMUM and BASIC are rejected
+  (`422 FR063`) — they don't carry enough data for the French mandate.
+- The seller in the embedded XML **must match** `X-Netfly-Fr-Sender` (`422 FR061` otherwise).
+  The supplier must be one of your **ACTIVE** French entities (`422 FR060` — see
+  `POST /fr/legalEntities`).
+- Max 20 MB. Invoice number: max 20 characters, unique per (number, year, seller SIREN).
+- Confirmations and lifecycle arrive through the **same webhooks** as UBL: `documentSent`,
+  `documentSendingFailed`, `frDocumentStatus` (including PPF rejections such as
+  `fr:REJECTED:REJ_UNI:G1.45`).
+- For non-domestic flows (foreign recipient, or a supplier outside the French mandate),
+  submit UBL via `/sendDocument` (`422 FR065` here).
+- Receiving is already format-preserving: incoming Factur-X is delivered to you as the
+  original PDF (`documentVesid: fr:facturx`) — Netfly is format-symmetric for France.
+
 ## 📥 Receiving from France
 
 Identical to Peppol reception (`documentReceived` webhook, `/documentsList`,
