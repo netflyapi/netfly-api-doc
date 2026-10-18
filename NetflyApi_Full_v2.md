@@ -685,6 +685,7 @@ curl -X GET "https://peppol2.netfly.be/netfly/businessCard?scheme=0208&participa
 
 ## 🏗️ Publish or Update a Business Card
 You can publish or update a Business Card for a participant. Uses participant data already stored in the Netfly database.
+Returns 409 (BC409) when a custom business card (published via PUT) exists for this participant; repeat with force=true to replace it with the database-generated card.
 
 ### 🌐 Endpoint
 `POST /netfly/businessCard?scheme={scheme}&participantId={participantId}`
@@ -715,6 +716,70 @@ curl -X POST "https://peppol2.netfly.be/netfly/businessCard?scheme=0208&particip
   "code": "BCP01"
 }
 ```
+
+## 🪪 Custom Business Card (`PUT /businessCard`)
+
+For full control over your Peppol Directory entry, publish the **standard BusinessCard XML**
+directly — the same structure as the [phoss-smp REST API](https://github.com/phax/phoss-smp/wiki/REST-API).
+The simple `POST` (card built from your participant data) remains available for everyday use.
+
+### 🌐 Endpoint
+`PUT /businessCard?scheme={scheme}&participantId={participantId}` — `Content-Type: application/xml`
+
+### 🧪 cURL Example
+```bash
+curl -X PUT "https://peppol2.netfly.be/netfly/businessCard?scheme=0208&participantId=0475689186" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/xml" \
+  --data-binary @businesscard.xml
+```
+
+### 📄 Example `businesscard.xml` (3 websites, 2 contacts)
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<BusinessCard xmlns="http://www.peppol.eu/schema/pd/businesscard/20180621/">
+  <ParticipantIdentifier scheme="iso6523-actorid-upis">0208:0475689186</ParticipantIdentifier>
+  <BusinessEntity registrationDate="2026-01-01">
+    <Name language="fr">Exemple SA</Name>
+    <Name language="en">Example Corp</Name>
+    <CountryCode>BE</CountryCode>
+    <GeographicalInformation>Rue de l'Exemple 1, 1000 Bruxelles</GeographicalInformation>
+    <Identifier scheme="VAT">BE0475689186</Identifier>
+    <Identifier scheme="GLN">5410000000003</Identifier>
+    <WebsiteURI>https://www.example.be</WebsiteURI>
+    <WebsiteURI>https://shop.example.be</WebsiteURI>
+    <WebsiteURI>https://support.example.be</WebsiteURI>
+    <Contact>
+      <Type>Billing</Type>
+      <Name>Comptabilité</Name>
+      <PhoneNumber>+32 2 000 00 00</PhoneNumber>
+      <Email>invoices@example.be</Email>
+    </Contact>
+    <Contact>
+      <Type>Support</Type>
+      <Name>Helpdesk</Name>
+      <Email>support@example.be</Email>
+    </Contact>
+    <AdditionalInformation>Opening hours: Mon-Fri 9-17.
+Second line of free text goes in the SAME element.</AdditionalInformation>
+  </BusinessEntity>
+</BusinessCard>
+```
+
+### 📝 Rules & notes
+- **Namespace `20180621` required** — older BusinessCard namespaces are rejected (`400 BC420`).
+- The `ParticipantIdentifier` must match the participant in the URL (`400 BC421`).
+- Each `BusinessEntity` needs at least a `Name` and a `CountryCode` (`400 BC422`).
+- Repeatable: `Name` (per language), `BusinessEntity`, `Identifier`, `WebsiteURI`, `Contact`.
+  **Not repeatable:** `AdditionalInformation` — put multiple lines inside the single element.
+- The XML is published **verbatim**: what you send is what the Peppol Directory shows
+  (Directory indexing may take a while to reflect changes).
+- Recommended workflow: `GET /businessCard` → edit the returned XML → `PUT` it back.
+  The XML returned by `GET` is the authoritative reference for the exact element shapes
+  your SMP stores — when in doubt, start from it rather than from this example.
+- After a custom card is published, `POST /businessCard` answers `409 BC409` instead of
+  overwriting it; use `POST ...&force=true` to deliberately return to the database-generated card.
+- Max 1 MB.
 
 ## 🗑️ Delete a Business Card
 Deletes an existing Business Card from the Peppol directory.
