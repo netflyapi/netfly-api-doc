@@ -630,6 +630,49 @@ curl -X GET "https://peppol2.netfly.be/netfly/participantLookup?scheme=0208&part
 }
 ```
 
+---
+# 🔎 Belgian Company Search (`GET /kbo/enterprise`)
+
+Verify a Belgian company against the **official KBO/BCE register** (FPS Economy) and
+read its full public record — useful before onboarding a trading partner or
+registering a participant.
+
+### 🌐 Endpoint
+`GET /kbo/enterprise?number={enterpriseNumber}&language={fr|nl}`
+
+### 🧪 cURL Example
+```bash
+curl "https://peppol2.netfly.be/netfly/kbo/enterprise?number=0475689186&language=fr" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+### 📄 What you get back
+On success (`200`), the body is the register's `ReadEnterpriseReply` XML **verbatim**:
+denominations (per language), registered office address, juridical form and situation,
+status, NACE-BEL activities, establishments, and more. Three response headers matter:
+
+| Header | Meaning |
+|---|---|
+| `X-Kbo-Status` | Register status code: `00001` found · `00014` cancelled number · `00016` future active |
+| `X-Kbo-Status-Description` | The register's own wording (in the requested language) |
+| `X-Netfly-Kbo-Quota-Remaining` | Your remaining lookups for today |
+
+### 📝 Rules & notes
+- `number` accepts 9 or 10 digits; dots, spaces and a `BE` prefix are tolerated.
+  The modulo-97 check digits are verified **before** the register is called, so a
+  typo costs you nothing (`400 KB400`).
+- `404 KB404` means the number is simply **not assigned** — the normal "does this
+  company exist?" negative answer.
+- A **cancelled** enterprise number still returns `200` (the record exists) with
+  `X-Kbo-Status: 00014` — check the header and the XML's juridical situation before
+  treating the company as active.
+- **Quota:** 100 lookups per client per day; `429 KB429` when exhausted, reset at
+  midnight (Belgian register day). Contact Netfly if you need more.
+- `language` only changes the descriptions inside the reply, not the data itself.
+- Source: KBO/BCE Public Search web service v18 — data is the official register,
+  updated by FPS Economy.
+
+
 
 ---
 # 💼 Business Card Management
