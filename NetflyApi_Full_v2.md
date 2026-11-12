@@ -1782,8 +1782,11 @@ of invoices that were already transmitted successfully.
 
 # 📁 SFTP Channel (alternative to the REST API)
 
-For systems that exchange files more easily than HTTP calls, Netfly offers a per-client
-SFTP channel — same validation, same network routing, same webhooks as the API.
+For systems that prefer file exchange over REST calls, Netfly offers a per-client **SFTP
+channel**: you upload UBL files to send, and (optionally) fetch received documents, read
+per-document status files, or have incoming invoices forwarded to a mailbox. Functionally
+it is equivalent to `/sendDocument` + `/receiveDocument` + webhooks — same validation, same
+routing (including automatic French-mandate routing), same guarantees.
 
 ## 🗂️ Folder Contract
 
@@ -1804,8 +1807,104 @@ SFTP channel — same validation, same network routing, same webhooks as the API
   `OUT/errors/` with the same message the API would return.
 - Fetch-and-delete from `IN/` — files are not removed automatically.
 
-## 🔐 Access
-- Host: `sftp.netfly.eu.com` (port 22), one chrooted account per client (`sftp` only, no shell).
-- Password or SSH-key authentication. Contact Netfly support to enable the channel and
-  receive your credentials.
+## 🔑 Connection
+
+| | |
+|---|---|
+| Host / port | provided at activation, port 22 |
+| User | `client_<yourClientNumber>` |
+| Authentication | password, or **SSH public key (recommended)** — send us your public key (`ssh-ed25519`, `ecdsa`, or `ssh-rsa`) and we disable the password |
+| Your folder tree | `/OUT`, `/OUT/archives`, `/OUT/errors`, `/STATUS`, `/IN` |
+
+The account is isolated (chrooted): you only ever see your own folders.
+
+## 📤 Sending documents
+
+Upload **Peppol BIS Billing 3.0 UBL** files (Invoice or CreditNote, `.xml`, UTF-8) into
+`/OUT`. Recommendations: one document per file, a unique file name (e.g.
+`<entity>_<documentNumber>.xml`), and finish the upload before the file is picked up —
+files are only read ~30 seconds after their last modification, so partial uploads are never
+processed.
+
+Every file goes through the **same validation as the API** (XSD + the official EN 16931 /
+Peppol BIS rules). The folder a file ends up in is your "API response":
+
+- **Accepted** → moved to `/OUT/archives/<name>_<yyyyMMdd-HHmmss>.xml` and queued for
+  sending. French domestic documents (French seller entity + French buyer) are routed
+  automatically through our French partner platform; everything else goes over Peppol.
+- **Rejected** → moved to `/OUT/errors/<name>_<yyyyMMdd-HHmmss>.xml`, with a report
+  `<same name>.err.txt` beside it containing the exact rule violations:
+
+```
+[BR-CO-17] VAT category tax amount = VAT category taxable amount x (VAT category rate / 100),
+rounded to two decimals.
+```
+
+A file that stays in `/OUT` was not processed yet (or a temporary infrastructure problem
+occurred — it is retried automatically).
+
+## 📊 Status files (`/STATUS`)
+
+Every document event produces one small JSON file — the SFTP equivalent of the webhooks:
+
+```
+20261111-101502_INV-2026-1042_SENT.json
+```
+```json
+{
+  "filename": "waterdrop-fr_INV-2026-1042.xml",
+  "documentNumber": "INV-2026-1042",
+  "sender": "0225:850183062",
+  "recipient": "0225:350441630",
+  "network": "FR",
+  "status": "SENT",
+  "timestamp": "2026-11-11T10:15:02+01:00",
+  "reason": null
+}
+```
+
+`sender` is **your own entity** that issued the document — use it to dispatch statuses when
+several of your entities share the account.
+
+| Status | Meaning |
+|---|---|
+| `ACCEPTED` | validation passed, document queued for sending |
+| `SENT` | delivered (Peppol) or confirmed transmitted (French platform) |
+| `FAILED` | sending failed after retries — `reason` contains the error |
+| `FR_REJECTED` | a French platform rejected the document — `reason` contains the official French reason text |
+| `FR_REFUSED` | the French buyer formally refused the invoice through the e-invoicing circuit |
+| `FR_<other>` | other French lifecycle statuses, informational (e.g. `FR_DEPOSITED`) |
+| `INVOICE_RESPONSE` | a buyer sent a formal Peppol Invoice Response (the document itself is delivered to `/IN`) |
+
+Status files are kept 90 days; your automation may read and delete them, or ignore them.
+Files are written atomically (never read half-written). Statuses are **in addition to**
+webhooks — both channels fire when both are configured.
+
+## 🚨 Alert e-mails
+
+Optionally, give us a technical contact address: every rejection (`/OUT/errors`), `FAILED`,
+`FR_REJECTED` and `FR_REFUSED` then also triggers an e-mail, so your team is notified
+actively instead of polling folders.
+
+## 📥 Receiving documents
+
+Two options, combinable:
+
+- **`/IN` folder**: every document received for your participants is uploaded into `/IN`
+  (atomic writes — a visible file is always complete). Fetch and archive them on your side.
+- **E-mail forwarding**: per receiving entity, we forward each received document to a
+  mailbox of your choice (e.g. an invoice-processing mailbox). The e-mail carries the
+  **original document** (XML, or PDF for Factur-X receptions) and, when the supplier
+  embedded a readable PDF inside the UBL, **that PDF as a second attachment**.
+
+## 📝 Notes
+
+- One SFTP account per client; multiple legal entities share it. Your UBL files identify
+  the issuing entity themselves (seller `EndpointID`), routing is per document, and the
+  `sender` field in status files tells you which entity each event belongs to.
+- Only `*.xml` files in `/OUT` are processed; anything else is ignored.
+- Document types accepted via SFTP: Invoice and CreditNote (other BIS document types go
+  through the API).
+- Maximum practical file size: 20 MB (embedded attachments included).
+
 
