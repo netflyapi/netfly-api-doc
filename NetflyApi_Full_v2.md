@@ -1805,7 +1805,7 @@ Refusal reason codes (there is no "other" reason for a B2B refusal):
 
 ### 🧪 cURL Example
 ```bash
-curl -X PUT "https://service.netfly.eu.com/netfly/fr/documents/12345/status" \
+curl -X PUT "https://peppol2.netfly.be/netfly/fr/documents/12345/status" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
