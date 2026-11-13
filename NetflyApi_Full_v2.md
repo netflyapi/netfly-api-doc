@@ -1764,6 +1764,88 @@ Identical to Peppol reception (`documentReceived` webhook, `/documentsList`,
 `/receiveDocument`). French documents are delivered in their **original format**:
 `documentVesid` is `fr:ubl`, `fr:cii`, or `fr:facturx` (Factur-X arrives as PDF/A-3).
 
+## ❌ Refusing a Received French Invoice (buyer statuses)
+
+French regulation requires the buyer to send an official **Refusée** status through the
+e-invoicing circuit whenever an invoice is refused. Nothing is required on the normal
+processing path. The same call also carries the optional buyer statuses (approved, in
+dispute, ...).
+
+### 🌐 Endpoint
+`PUT /fr/documents/{internalId}/status`
+
+`internalId` is the identifier of the received document: you get it in the
+`documentReceived` webhook, and as `id` in `/documentsList?flow=in`.
+
+### 📥 Request Format
+
+| Field | Required | Description |
+|---|---|---|
+| `status` | yes | `REFUSED`, or one of `IN_HAND`, `APPROVED`, `PARTIALLY_APPROVED`, `DISPUTED`, `SUSPENDED`, `COMPLETED` |
+| `rejectionReason` | for `REFUSED` and `DISPUTED` | Reason code — for a refusal, one of the 13 codes below |
+| `message` | for `REFUSED` | Your explanation for the seller (free text) |
+
+Refusal reason codes (there is no "other" reason for a B2B refusal):
+
+| Code | Meaning |
+|---|---|
+| `TX_TVA_ERR` | Incorrect VAT rate |
+| `MONTANTTOTAL_ERR` | Incorrect invoice total |
+| `CALCUL_ERR` | Invoice calculation error |
+| `NON_CONFORME` | Required legal information is missing |
+| `DOUBLON` | Duplicate invoice: same supplier, invoice number and year |
+| `DOUBLE_FACT` | The goods or services were already billed on a different invoice |
+| `DEST_ERR` | The wrong legal entity was billed |
+| `TRANSAC_INC` | The buyer does not recognize the transaction |
+| `EMMET_INC` | The buyer does not recognize the invoice issuer |
+| `CONTRAT_TERM` | The contract has ended |
+| `CMD_ERR` | Missing or incorrect purchase order number (valid only if the buyer supplied the number before invoicing) |
+| `ADR_ERR` | Missing or incorrect electronic invoicing address |
+| `REF_CT_ABSENT` | A contractually required reference is missing (name the missing reference in `message`) |
+
+### 🧪 cURL Example
+```bash
+curl -X PUT "https://service.netfly.eu.com/netfly/fr/documents/12345/status" \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "REFUSED",
+    "rejectionReason": "DOUBLON",
+    "message": "We already received invoice 1842 from this supplier."
+  }'
+```
+
+### ✅ Successful Response (202 — queued)
+```json
+{
+  "success": true,
+  "code": "FR000",
+  "message": "status REFUSED queued for transmission; delivery is confirmed by a frDocumentStatus event"
+}
+```
+
+The status is **queued**, not yet delivered. The delivery to the seller is confirmed a few
+minutes later by a `frDocumentStatus` webhook event (see below): `fr:FR_REFUSED:SENT` when
+it is done, or `fr:FR_REFUSED:SEND_FAILED` — in that case, send the status again.
+
+### ❌ Unsuccessful Responses
+
+| Code | HTTP | Meaning |
+|---|---|---|
+| `FR020` / `FR021` / `FR022` | 400 | `status` missing, unknown, or not a status a receiver may set |
+| `FR023` | 400 | `rejectionReason` missing (`REFUSED`, `DISPUTED`) or `message` missing (`REFUSED`) |
+| `FR029` | 400 | unknown `rejectionReason` for `REFUSED` (the allowed codes are listed in the message) |
+| `FR025` / `FR026` | 404 | malformed path, or no French document with this `internalId` for your client |
+| `FR028` | 409 | a status is still being transmitted, is already set, or the document was refused |
+| `FR024` | 422 / 502 | the French platform rejected the status change (its message is included), or is unavailable |
+| `FR027` | 422 | status not supported for this document |
+
+### 📝 Notes
+- **A refusal is final**: any later status on the same document returns `409 FR028`.
+- `GET /fr/documents/{internalId}/status` returns the current state: `RECEIVED` until you
+  send a status, then `FR_REFUSED_QUEUED` → `FR_REFUSED` (or `FR_REFUSED_SEND_FAILED`).
+- Payment statuses are not available through this call yet.
+
 ## 🔔 French Lifecycle Statuses — `frDocumentStatus` Webhook
 
 Your webhook receives a new event type for French lifecycle updates
@@ -1774,6 +1856,9 @@ Your webhook receives a new event type for French lifecycle updates
 | `fr:FR_DEPOSITED` | Invoice deposited (buyer side lifecycle) |
 | `fr:FR_FLUX_RECEIVABLE` / `fr:C5_DOCUMENT_PROCESSED` | Accepted/processed by the French tax platform |
 | `fr:REJECTED:REJ_UNI:G1.45` | **Rejected by the PPF** — reason code included |
+| `fr:FR_REFUSED` | **Refused by the buyer** (invoice you sent) — the buyer's reason is in the status details |
+| `fr:FR_REFUSED:SENT` | A status **you sent** for a received invoice (here: refusal) was delivered to the seller |
+| `fr:FR_REFUSED:SEND_FAILED` | A status you sent could not be delivered — send it again |
 
 On a PPF rejection the document also appears with `transferStatus: FAILED` in
 `/documentsList`, with the full French reason text in the feedback — e.g.
@@ -1875,6 +1960,7 @@ several of your entities share the account.
 | `FR_REFUSED` | the French buyer formally refused the invoice through the e-invoicing circuit |
 | `FR_<other>` | other French lifecycle statuses, informational (e.g. `FR_DEPOSITED`) |
 | `INVOICE_RESPONSE` | a buyer sent a formal Peppol Invoice Response (the document itself is delivered to `/IN`) |
+| `STATUS_SENT` | a status you sent for a received French invoice (e.g. a refusal) was delivered to the seller — `reason` names the status; a failed delivery appears as `FAILED` |
 
 Status files are kept 90 days; your automation may read and delete them, or ignore them.
 Files are written atomically (never read half-written). Statuses are **in addition to**
