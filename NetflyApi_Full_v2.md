@@ -1684,7 +1684,8 @@ curl -X POST https://service.netfly.eu.com/netfly/fr/legalEntities \
   "participantId": "0225:850183062",
   "displayName": "WATERDROP FRANCE SAS",
   "status": "PENDING_APPROVAL",
-  "active": false
+  "active": false,
+  "sendingOnly": false
 }
 ```
 
@@ -1697,6 +1698,65 @@ curl -X POST https://service.netfly.eu.com/netfly/fr/legalEntities \
 - Check status anytime: `GET /fr/legalEntities?siren=850183062` (omit `siren` to list all).
 - Cancel with `DELETE /fr/legalEntities?siren=...` — refused (409, `FR032`) once documents
   exist, to protect invoice reception.
+- If you hold several registrations for one SIREN (for example a normal and a sending-only
+  one), `GET` and `DELETE` answer `409 FR005`; add `&participantId=0225:...` to say which one.
+
+## 📮 Sending Only (the company keeps its current platform for receiving)
+
+A French company that already receives its invoices through another Approved Platform can
+still **send** through Netfly — typically the customers of a billing software integrated with
+this API. Add `"sendingOnly": true` to the registration request:
+
+### 🧪 cURL Example
+```bash
+curl -X POST https://service.netfly.eu.com/netfly/fr/legalEntities \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+        "partner": "ADEMICO",
+        "siren": "123456789",
+        "displayName": "EXAMPLE COMPANY SAS",
+        "sendingOnly": true
+      }'
+```
+
+### ✅ Response (202 — pending approval)
+```json
+{
+  "partner": "ADEMICO",
+  "siren": "123456789",
+  "participantId": "0225:123456789_netfly",
+  "electronicAddress": "0225:123456789_netfly",
+  "displayName": "EXAMPLE COMPANY SAS",
+  "status": "PENDING_APPROVAL",
+  "active": false,
+  "sendingOnly": true
+}
+```
+
+### 📝 Notes
+- Netfly registers a **dedicated sending address** for the company, returned in
+  `electronicAddress`. The company's receiving address is untouched: nothing is created or
+  changed in the French Annuaire and no platform migration starts.
+- **No opt-in mandate** (*accord formel*) is needed. Before approval Netfly still needs the
+  KYB/KYC documents of the company and its written authorisation to send invoices on its
+  behalf. Your Netfly contact provides the list.
+- Once **ACTIVE**, every invoice of this company must carry the returned address as **seller
+  electronic address (BT-34)**, exactly as returned:
+  ```xml
+  <cac:AccountingSupplierParty>
+    <cac:Party>
+      <cbc:EndpointID schemeID="0225">123456789_netfly</cbc:EndpointID>
+      ...
+      <cac:PartyLegalEntity>
+        <cbc:CompanyID schemeID="0002">123456789</cbc:CompanyID>   <!-- legal id: the bare SIREN -->
+  ```
+  An invoice of this company with another seller address (its bare SIREN, a SIRET...) is
+  refused with `422 FR060`; the message gives the address to use. With `/fr/sendDocument`
+  (Factur-X) the same address goes in the `sender` header and in the document.
+- The buyer's statuses (refusal, approval...) and the tax platform's outcome come back as
+  usual through the `frDocumentStatus` webhook.
+- The sending address cannot receive invoices; suppliers keep using the company's own address.
 
 ## 📤 Sending to France
 
@@ -1705,6 +1765,8 @@ Nothing changes in how you call `/sendDocument` — routing is automatic per doc
 | Your document | Routed via |
 |---|---|
 | French supplier (registered ACTIVE) → French recipient (`0225:`) | French Approved Platform |
+| French supplier registered **sending only**, invoice carries its dedicated address → French recipient | French Approved Platform |
+| French supplier registered **sending only**, invoice carries another seller address → French recipient | ❌ rejected `422 FR060` (message gives the address to use) |
 | French supplier **not registered** → French recipient | ❌ rejected `422 FR060` |
 | Any other combination (e.g. Belgian supplier → French recipient) | Classic Peppol |
 
@@ -1805,7 +1867,7 @@ Refusal reason codes (there is no "other" reason for a B2B refusal):
 
 ### 🧪 cURL Example
 ```bash
-curl -X PUT "https://peppol2.netfly.be/netfly/fr/documents/12345/status" \
+curl -X PUT "https://service.netfly.eu.com/netfly/fr/documents/12345/status" \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -1854,6 +1916,8 @@ Your webhook receives a new event type for French lifecycle updates
 | Status value | Meaning |
 |---|---|
 | `fr:FR_DEPOSITED` | Invoice deposited (buyer side lifecycle) |
+| `fr:FR_RECEIVED` | Invoice you sent was received by the buyer's platform (reception checks passed) |
+| `fr:FR_MADE_AVAILABLE` | Invoice you sent was made available to the buyer |
 | `fr:FR_FLUX_RECEIVABLE` / `fr:C5_DOCUMENT_PROCESSED` | Accepted/processed by the French tax platform |
 | `fr:REJECTED:REJ_UNI:G1.45` | **Rejected by the PPF** — reason code included |
 | `fr:FR_REFUSED` | **Refused by the buyer** (invoice you sent) — the buyer's reason is in the status details |
