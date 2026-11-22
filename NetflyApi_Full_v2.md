@@ -1901,12 +1901,16 @@ it is done, or `fr:FR_REFUSED:SEND_FAILED` — in that case, send the status aga
 | `FR028` | 409 | a status is still being transmitted, is already set, or the document was refused |
 | `FR024` | 422 / 502 | the French platform rejected the status change (its message is included), or is unavailable |
 | `FR027` | 422 | status not supported for this document |
+| `FR035` | 422 | not a French domestic invoice — seller and buyer must both have a French `0225` address |
 
 ### 📝 Notes
 - **A refusal is final**: any later status on the same document returns `409 FR028`.
 - `GET /fr/documents/{internalId}/status` returns the current state: `RECEIVED` until you
   send a status, then `FR_REFUSED_QUEUED` → `FR_REFUSED` (or `FR_REFUSED_SEND_FAILED`).
 - Payment statuses are not available through this call yet.
+- Statuses exist only for **French domestic invoices**. An invoice received from abroad on a
+  French address (for example from a Belgian seller) has no French lifecycle: `GET` returns
+  `"lifecycleSupported": false` for it and a `PUT` answers `422 FR035`.
 
 ## 🔔 French Lifecycle Statuses — `frDocumentStatus` Webhook
 
